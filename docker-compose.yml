@@ -1,0 +1,23 @@
+services:
+  n8n:
+    #image: n8nio/n8n
+    build: .
+    environment:
+      # MCP server environment variables
+      - MCP_BRAVE_API_KEY=your-brave-api-key
+      - MCP_OPENAI_API_KEY=your-openai-key
+      - MCP_SERPER_API_KEY=your-serper-key
+      - MCP_WEATHER_API_KEY=
+
+      # Enable community nodes as tools
+      - N8N_COMMUNITY_PACKAGES_ALLOW_TOOL_USAGE=true
+    ports:
+      - "5678:5678"
+    volumes:
+      - workflow-n8n_n8n_data_old:/home/node/.n8n
+    stdin_open: true
+    tty: true
+
+volumes:
+  workflow-n8n_n8n_data_old:
+    external: true

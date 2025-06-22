@@ -1,0 +1,37 @@
+services:
+  n8n:
+    image: docker.n8n.io/n8nio/n8n
+    container_name: n8n
+    ports:
+      - "5678:5678"
+    environment:
+      - DB_TYPE=postgresdb
+      - DB_POSTGRESDB_DATABASE=n8n_Database
+      - DB_POSTGRESDB_HOST=db
+      - DB_POSTGRESDB_PORT=5432
+      - DB_POSTGRESDB_USER=n8n_user
+      - DB_POSTGRESDB_SCHEMA=public
+      - DB_POSTGRESDB_PASSWORD=dbn8n@2025
+       # Enable community nodes as tools
+      - N8N_COMMUNITY_PACKAGES_ALLOW_TOOL_USAGE=true
+    volumes:
+      - workflow-n8n_n8n_data:/home/node/.n8n
+    stdin_open: true
+    tty: true
+    depends_on:
+      - db
+    restart: unless-stopped
+
+  db:
+    image: postgres:17
+    environment:
+      POSTGRES_DB: n8n_Database
+      POSTGRES_USER: n8n_user
+      POSTGRES_PASSWORD: dbn8n@2025
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+
+volumes:
+  workflow-n8n_n8n_data:
+    external: true
+  postgres_data:

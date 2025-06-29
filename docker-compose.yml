@@ -14,10 +14,10 @@ services:
     ports:
       - "5678:5678"
     volumes:
-      - workflow-n8n_n8n_data_old:/home/node/.n8n
+      - workflow-n8n_n8n_data:/home/node/.n8n
     stdin_open: true
     tty: true
 
 volumes:
-  workflow-n8n_n8n_data_old:
+  workflow-n8n_n8n_data:
     external: true

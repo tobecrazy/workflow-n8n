@@ -3,8 +3,10 @@ FROM n8nio/n8n:latest
 USER root
 
 # 使用 edge 仓库获取更新包（如 py3-pip）
-RUN echo "https://dl-cdn.alpinelinux.org/alpine/edge/community" >> /etc/apk/repositories && \
+RUN echo "https://dl-cdn.alpinelinux.org/alpine/edge/main" > /etc/apk/repositories && \
+    echo "https://dl-cdn.alpinelinux.org/alpine/edge/community" >> /etc/apk/repositories && \
     apk update && \
+    apk upgrade && \
     apk add --no-cache \
       python3 \
       py3-pip \
@@ -13,9 +15,10 @@ RUN echo "https://dl-cdn.alpinelinux.org/alpine/edge/community" >> /etc/apk/repo
       gcc \
       musl-dev \
       libffi-dev \
-      openssl-dev \
       curl \
       ca-certificates
+
+
 
 # 更新 pip 到最新版（兼容 PEP 668）
 RUN pip install --upgrade pip --break-system-packages

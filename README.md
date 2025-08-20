@@ -74,6 +74,30 @@ N8N_COMMUNITY_PACKAGES_ALLOW_TOOL_USAGE=true
 ### 截图
 ![工作流示例](n8n_mcp_demo.gif)
 
+### Troubleshooting Docker Build Issues
+
+If you encounter dependency conflicts during the Docker image build, especially related to `openssl-dev` on Alpine Linux, it's likely due to inconsistencies between Alpine's stable and `edge` repositories. The `Dockerfile` has been updated to address this by:
+
+1.  Ensuring both `main` and `community` `edge` repositories are used.
+2.  Performing `apk update` and `apk upgrade` to update existing packages.
+3.  Explicitly installing `openssl` and `openssl-dev` early in the `apk add` command to prioritize their dependency resolution.
+
+If you still face issues, ensure your Docker cache is cleared and try rebuilding with `docker-compose up --build --force-recreate`.
+
+---
+
+### Docker 构建问题排查
+
+如果在 Docker 镜像构建过程中遇到依赖冲突，特别是在 Alpine Linux 上与 `openssl-dev` 相关的问题，这很可能是由于 Alpine 稳定版和 `edge` 仓库之间的不一致造成的。`Dockerfile` 已更新以解决此问题，具体措施如下：
+
+1.  确保同时使用 `main` 和 `community` `edge` 仓库。
+2.  执行 `apk update` 和 `apk upgrade` 以更新现有软件包。
+3.  在 `apk add` 命令中，将 `openssl` 和 `openssl-dev` 明确放在前面，以优先解决它们的依赖关系。
+
+如果仍然遇到问题，请确保清除 Docker 缓存，并尝试使用 `docker-compose up --build --force-recreate` 重新构建。
+
+---
+
 ## Getting Help / 获取帮助
 For support, please open an issue on GitHub.  
 如需支持，请在GitHub上提交issue。

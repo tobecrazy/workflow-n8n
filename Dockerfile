@@ -8,6 +8,8 @@ RUN echo "https://dl-cdn.alpinelinux.org/alpine/edge/main" > /etc/apk/repositori
     apk update && \
     apk upgrade && \
     apk add --no-cache \
+      openssl \
+      openssl-dev \
       python3 \
       py3-pip \
       py3-setuptools \

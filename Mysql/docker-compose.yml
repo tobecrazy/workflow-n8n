@@ -1,0 +1,16 @@
+services:
+  db:
+    image: mysql:latest
+    environment:
+      - MYSQL_ROOT_PASSWORD=9ol.6yhn3edc
+      - MYSQL_DATABASE=mysql
+      - MYSQL_USER=study
+      - MYSQL_PASSWORD=5tgb3edc1qaz
+    container_name: mysql
+    ports:
+      - "3308:3306"
+    volumes:
+      - mysql_data:/var/lib/mysql
+    restart: always
+volumes:
+  mysql_data:

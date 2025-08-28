@@ -1,0 +1,21 @@
+version: '3.8'
+
+services:
+  tomcat:
+    build: .
+    container_name: tomcat-server
+    ports:
+      - "8090:8080"
+    volumes:
+      - ./webapps:/opt/tomcat/webapps
+      - ./logs:/opt/tomcat/logs
+      - ./conf:/opt/tomcat/conf
+    environment:
+      - JAVA_OPTS=-Xmx512m -Xms256m
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8080/"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s

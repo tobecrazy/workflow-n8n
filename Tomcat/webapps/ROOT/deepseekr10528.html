@@ -1,0 +1,314 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>伯努利原理科学动画</title>
+    <script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
+    <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+    <style>
+        body {
+            font-family: 'Arial', sans-serif;
+            max-width: 1000px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        .container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        canvas {
+            background-color: white;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+        .controls {
+            margin: 20px 0;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 15px;
+            justify-content: center;
+        }
+        .control-group {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        .formula {
+            background-color: white;
+            padding: 15px;
+            border-radius: 8px;
+            margin: 20px 0;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+            text-align: center;
+        }
+        .explanation {
+            margin-top: 20px;
+            line-height: 1.6;
+        }
+        h1, h2 {
+            color: #2c3e50;
+        }
+        label {
+            margin-bottom: 5px;
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>伯努利原理科学动画</h1>
+        
+        <canvas id="animationCanvas" width="800" height="400"></canvas>
+        
+        <div class="formula">
+            <h2>伯努利方程</h2>
+            <p>\[P + \frac{1}{2} \rho v^2 + \rho gh = \text{常数}\]</p>
+            <p>其中：</p>
+            <ul style="text-align: left;">
+                <li>\(P\) = 流体压强</li>
+                <li>\(\rho\) = 流体密度</li>
+                <li>\(v\) = 流体速度</li>
+                <li>\(g\) = 重力加速度</li>
+                <li>\(h\) = 高度</li>
+            </ul>
+        </div>
+        
+        <div class="controls">
+            <div class="control-group">
+                <label for="flowRate">流速 (m/s)</label>
+                <input type="range" id="flowRate" min="1" max="10" value="3" step="0.1">
+                <span id="flowRateValue">3.0</span>
+            </div>
+            
+            <div class="control-group">
+                <label for="pipeWidth">管道宽度比例</label>
+                <input type="range" id="pipeWidth" min="0.3" max="0.8" value="0.5" step="0.05">
+                <span id="pipeWidthValue">0.5</span>
+            </div>
+            
+            <div class="control-group">
+                <label for="density">流体密度 (kg/m³)</label>
+                <input type="range" id="density" min="500" max="2000" value="1000" step="50">
+                <span id="densityValue">1000</span>
+            </div>
+        </div>
+        
+        <div class="explanation">
+            <h2>伯努利原理说明</h2>
+            <p>伯努利原理指出：在流体流动中，流速大的地方压强小，流速小的地方压强大。这个动画展示了在变径管道中流动的流体：</p>
+            <ul>
+                <li>当流体进入狭窄区域时，流速增加（连续性方程）</li>
+                <li>根据伯努利方程，流速增加导致压力降低</li>
+                <li>压力差通过U形管压力计可视化显示</li>
+                <li>粒子运动速度表示流体速度</li>
+            </ul>
+            <p>调整上方的滑块可以改变参数并观察它们对流体流动和压力的影响。</p>
+        </div>
+    </div>
+
+    <script>
+        // 获取Canvas和上下文
+        const canvas = document.getElementById('animationCanvas');
+        const ctx = canvas.getContext('2d');
+        
+        // 获取控制元素
+        const flowRateSlider = document.getElementById('flowRate');
+        const pipeWidthSlider = document.getElementById('pipeWidth');
+        const densitySlider = document.getElementById('density');
+        const flowRateValue = document.getElementById('flowRateValue');
+        const pipeWidthValue = document.getElementById('pipeWidthValue');
+        const densityValue = document.getElementById('densityValue');
+        
+        // 初始参数
+        let flowRate = parseFloat(flowRateSlider.value);
+        let pipeWidthFactor = parseFloat(pipeWidthSlider.value);
+        let density = parseFloat(densitySlider.value);
+        
+        // 更新显示值
+        flowRateValue.textContent = flowRate.toFixed(1);
+        pipeWidthValue.textContent = pipeWidthFactor.toFixed(2);
+        densityValue.textContent = density;
+        
+        // 粒子系统
+        const particles = [];
+        const particleCount = 150;
+        
+        // 初始化粒子
+        function initParticles() {
+            particles.length = 0;
+            for (let i = 0; i < particleCount; i++) {
+                particles.push({
+                    x: Math.random() * 200 - 50, // 从左侧开始
+                    y: 150 + Math.random() * 100,
+                    radius: 3 + Math.random() * 3,
+                    speed: flowRate * (0.8 + Math.random() * 0.4),
+                    color: `rgba(30, 144, 255, ${0.7 + Math.random() * 0.3})`
+                });
+            }
+        }
+        
+        // 动画循环
+        function animate() {
+            requestAnimationFrame(animate);
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            
+            // 绘制管道
+            drawPipe();
+            
+            // 更新并绘制粒子
+            updateParticles();
+            
+            // 绘制压力计
+            drawManometers();
+        }
+        
+        // 绘制管道
+        function drawPipe() {
+            const pipeY = 200;
+            const pipeHeight = 100;
+            const narrowWidth = 150 * pipeWidthFactor;
+            
+            ctx.beginPath();
+            
+            // 左段管道
+            ctx.rect(100, pipeY, 200, pipeHeight);
+            
+            // 收缩段
+            ctx.moveTo(300, pipeY);
+            ctx.lineTo(350, pipeY);
+            ctx.lineTo(350, pipeY + pipeHeight);
+            ctx.lineTo(300, pipeY + pipeHeight);
+            
+            // 狭窄段
+            const narrowY = pipeY + (pipeHeight - narrowWidth) / 2;
+            ctx.rect(350, narrowY, 100, narrowWidth);
+            
+            // 扩张段
+            ctx.moveTo(450, narrowY);
+            ctx.lineTo(500, pipeY);
+            ctx.lineTo(500, pipeY + pipeHeight);
+            ctx.lineTo(450, narrowY + narrowWidth);
+            
+            // 右段管道
+            ctx.rect(500, pipeY, 200, pipeHeight);
+            
+            ctx.fillStyle = '#e0e0e0';
+            ctx.fill();
+            ctx.strokeStyle = '#333';
+            ctx.lineWidth = 2;
+            ctx.stroke();
+            
+            // 标注管道区域
+            ctx.fillStyle = '#333';
+            ctx.font = '16px Arial';
+            ctx.fillText('A₁', 200, pipeY - 10);
+            ctx.fillText('A₂', 400, narrowY - 10);
+            ctx.fillText('A₃', 600, pipeY - 10);
+        }
+        
+        // 更新粒子位置
+        function updateParticles() {
+            const narrowWidth = 150 * pipeWidthFactor;
+            
+            particles.forEach(particle => {
+                // 计算不同区域的速度
+                let speed = particle.speed;
+                if (particle.x > 300 && particle.x < 450) {
+                    // 收缩/狭窄区域 - 速度增加
+                    speed *= 1.5 / pipeWidthFactor;
+                }
+                
+                // 更新位置
+                particle.x += speed;
+                
+                // 边界处理
+                if (particle.x > canvas.width + 50) {
+                    particle.x = -50;
+                    particle.y = 150 + Math.random() * 100;
+                }
+                
+                // 绘制粒子
+                ctx.beginPath();
+                ctx.arc(particle.x, particle.y, particle.radius, 0, Math.PI * 2);
+                ctx.fillStyle = particle.color;
+                ctx.fill();
+            });
+        }
+        
+        // 绘制压力计
+        function drawManometers() {
+            // 压力计位置
+            const positions = [
+                {x: 200, y: 150, label: 'P₁'},  // 宽区域
+                {x: 400, y: 150, label: 'P₂'},  // 窄区域
+                {x: 600, y: 150, label: 'P₃'}   // 恢复区域
+            ];
+            
+            // 计算压力 (简化的伯努利原理)
+            const p1 = 100;  // 参考压力
+            const v1 = flowRate;
+            const v2 = flowRate * 1.5 / pipeWidthFactor;
+            const p2 = p1 - 0.5 * density * (v2*v2 - v1*v1) / 1000;
+            const p3 = p1 * 0.95;
+            
+            const pressures = [p1, p2, p3];
+            
+            positions.forEach((pos, index) => {
+                const pressure = pressures[index];
+                const height = 100 - pressure * 0.5;
+                
+                // 绘制U形管
+                ctx.beginPath();
+                ctx.moveTo(pos.x - 20, pos.y);
+                ctx.lineTo(pos.x - 20, pos.y + 100);
+                ctx.lineTo(pos.x + 20, pos.y + 100);
+                ctx.lineTo(pos.x + 20, pos.y + height);
+                ctx.strokeStyle = '#666';
+                ctx.lineWidth = 2;
+                ctx.stroke();
+                
+                // 绘制流体
+                ctx.beginPath();
+                ctx.moveTo(pos.x - 20, pos.y + 100);
+                ctx.lineTo(pos.x - 20, pos.y + height);
+                ctx.lineTo(pos.x + 20, pos.y + height);
+                ctx.lineTo(pos.x + 20, pos.y + 100);
+                ctx.closePath();
+                ctx.fillStyle = 'rgba(30, 144, 255, 0.6)';
+                ctx.fill();
+                
+                // 标注
+                ctx.fillStyle = '#333';
+                ctx.font = '14px Arial';
+                ctx.fillText(pos.label, pos.x - 10, pos.y - 10);
+                ctx.fillText(`${pressure.toFixed(1)} kPa`, pos.x - 30, pos.y + 120);
+            });
+        }
+        
+        // 事件监听器
+        flowRateSlider.addEventListener('input', () => {
+            flowRate = parseFloat(flowRateSlider.value);
+            flowRateValue.textContent = flowRate.toFixed(1);
+            particles.forEach(p => p.speed = flowRate * (0.8 + Math.random() * 0.4));
+        });
+        
+        pipeWidthSlider.addEventListener('input', () => {
+            pipeWidthFactor = parseFloat(pipeWidthSlider.value);
+            pipeWidthValue.textContent = pipeWidthFactor.toFixed(2);
+        });
+        
+        densitySlider.addEventListener('input', () => {
+            density = parseFloat(densitySlider.value);
+            densityValue.textContent = density;
+        });
+        
+        // 初始化并开始动画
+        initParticles();
+        animate();
+    </script>
+</body>
+</html>

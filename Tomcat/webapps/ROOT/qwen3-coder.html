@@ -1,0 +1,444 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>伯努利原理 - 科学动画演示</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            line-height: 1.6;
+            margin: 0;
+            padding: 0;
+            background: linear-gradient(135deg, #1a2a6c, #b21f1f, #1a2a6c);
+            color: #fff;
+            min-height: 100vh;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        
+        header {
+            text-align: center;
+            padding: 30px 0;
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: 15px;
+            margin-bottom: 30px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+            backdrop-filter: blur(10px);
+        }
+        
+        h1 {
+            font-size: 2.8rem;
+            margin-bottom: 10px;
+            text-shadow: 0 2px 10px rgba(0, 0, 0, 0.5);
+        }
+        
+        .subtitle {
+            font-size: 1.4rem;
+            opacity: 0.9;
+            margin-bottom: 20px;
+        }
+        
+        .section {
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 15px;
+            padding: 25px;
+            margin-bottom: 30px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        
+        h2 {
+            font-size: 2rem;
+            color: #4fc3f7;
+            margin-top: 0;
+            border-bottom: 2px solid #4fc3f7;
+            padding-bottom: 10px;
+        }
+        
+        .formula {
+            background: rgba(0, 0, 0, 0.4);
+            padding: 20px;
+            border-radius: 10px;
+            text-align: center;
+            font-size: 1.5rem;
+            margin: 20px 0;
+            font-family: 'Times New Roman', serif;
+            border: 1px solid rgba(79, 195, 247, 0.3);
+        }
+        
+        .animation-container {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: space-around;
+            gap: 20px;
+            margin: 30px 0;
+        }
+        
+        .animation-box {
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: 10px;
+            padding: 20px;
+            flex: 1;
+            min-width: 300px;
+            text-align: center;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        
+        .pipe {
+            width: 100%;
+            height: 100px;
+            background: linear-gradient(to bottom, #5d4037, #8d6e63, #5d4037);
+            border-radius: 50px;
+            position: relative;
+            margin: 30px 0;
+            overflow: hidden;
+            border: 2px solid #4e342e;
+        }
+        
+        .fluid {
+            position: absolute;
+            top: 0;
+            left: 0;
+            height: 100%;
+            background: linear-gradient(to bottom, #29b6f6, #0288d1, #29b6f6);
+            border-radius: 50px;
+            width: 0%;
+            transition: width 0.5s ease;
+        }
+        
+        .pipe-section {
+            position: absolute;
+            top: 0;
+            height: 100%;
+            width: 20%;
+            border: 2px solid #fff;
+            box-sizing: border-box;
+        }
+        
+        .section1 { left: 10%; }
+        .section2 { left: 40%; }
+        .section3 { left: 70%; }
+        
+        .pressure-label {
+            position: absolute;
+            bottom: -30px;
+            width: 100%;
+            text-align: center;
+            font-weight: bold;
+        }
+        
+        .velocity-arrow {
+            position: absolute;
+            top: -40px;
+            width: 100%;
+            text-align: center;
+        }
+        
+        .arrow {
+            display: inline-block;
+            width: 0;
+            height: 0;
+            border-left: 10px solid transparent;
+            border-right: 10px solid transparent;
+            border-bottom: 20px solid #ffeb3b;
+            animation: bounce 1s infinite alternate;
+        }
+        
+        @keyframes bounce {
+            from { transform: translateY(0); }
+            to { transform: translateY(-10px); }
+        }
+        
+        .control-panel {
+            display: flex;
+            justify-content: center;
+            gap: 20px;
+            margin: 20px 0;
+            flex-wrap: wrap;
+        }
+        
+        button {
+            background: linear-gradient(to right, #2196f3, #21cbf3);
+            color: white;
+            border: none;
+            padding: 12px 25px;
+            border-radius: 30px;
+            cursor: pointer;
+            font-size: 1rem;
+            font-weight: bold;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(33, 150, 243, 0.4);
+        }
+        
+        button:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 6px 20px rgba(33, 150, 243, 0.6);
+        }
+        
+        button:active {
+            transform: translateY(1px);
+        }
+        
+        .slider-container {
+            width: 100%;
+            max-width: 500px;
+            margin: 20px auto;
+        }
+        
+        .slider {
+            width: 100%;
+            height: 10px;
+            -webkit-appearance: none;
+            background: rgba(255, 255, 255, 0.2);
+            border-radius: 5px;
+            outline: none;
+        }
+        
+        .slider::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            width: 25px;
+            height: 25px;
+            border-radius: 50%;
+            background: #2196f3;
+            cursor: pointer;
+            box-shadow: 0 0 10px rgba(33, 150, 243, 0.8);
+        }
+        
+        .explanation {
+            background: rgba(0, 0, 0, 0.3);
+            padding: 20px;
+            border-radius: 10px;
+            margin: 20px 0;
+            border-left: 4px solid #4fc3f7;
+        }
+        
+        .applications {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 20px;
+            margin-top: 20px;
+        }
+        
+        .application-card {
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 10px;
+            padding: 20px;
+            text-align: center;
+            transition: transform 0.3s ease;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        
+        .application-card:hover {
+            transform: translateY(-10px);
+            background: rgba(255, 255, 255, 0.2);
+        }
+        
+        .application-icon {
+            font-size: 3rem;
+            margin-bottom: 15px;
+        }
+        
+        footer {
+            text-align: center;
+            padding: 20px;
+            margin-top: 30px;
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: 15px;
+            font-size: 0.9rem;
+        }
+        
+        @media (max-width: 768px) {
+            .container {
+                padding: 10px;
+            }
+            
+            h1 {
+                font-size: 2rem;
+            }
+            
+            .subtitle {
+                font-size: 1.1rem;
+            }
+            
+            .animation-container {
+                flex-direction: column;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>伯努利原理</h1>
+            <div class="subtitle">科学动画演示与公式解析</div>
+            <p>面向高中生与大学生的流体力学基础概念讲解</p>
+        </header>
+        
+        <section class="section">
+            <h2>什么是伯努利原理？</h2>
+            <div class="explanation">
+                <p>伯努利原理是流体力学中的一个基本定律，由瑞士科学家丹尼尔·伯努利于1738年提出。该原理描述了在理想流体（无粘性、不可压缩）的稳定流动中，流体的压强、速度和高度之间存在的关系。</p>
+                <p>简单来说，当流体在流动过程中速度增加时，其压强会减小；反之，当速度减小时，压强会增大。这就是著名的"伯努利效应"。</p>
+            </div>
+            
+            <div class="formula">
+                P + ½ρv² + ρgh = 常数
+            </div>
+            
+            <div class="explanation">
+                <p>其中：</p>
+                <p>P = 流体压强</p>
+                <p>ρ = 流体密度</p>
+                <p>v = 流体速度</p>
+                <p>g = 重力加速度 (9.8 m/s²)</p>
+                <p>h = 高度</p>
+            </div>
+        </section>
+        
+        <section class="section">
+            <h2>科学动画演示</h2>
+            <div class="animation-container">
+                <div class="animation-box">
+                    <h3>管道中的流体流动</h3>
+                    <div class="pipe">
+                        <div class="fluid" id="fluid"></div>
+                        <div class="pipe-section section1">
+                            <div class="velocity-arrow"><div class="arrow"></div></div>
+                            <div class="pressure-label">高压强<br>低速度</div>
+                        </div>
+                        <div class="pipe-section section2">
+                            <div class="velocity-arrow"><div class="arrow" style="border-bottom-color: #f44336;"></div></div>
+                            <div class="pressure-label">中等压强<br>中等速度</div>
+                        </div>
+                        <div class="pipe-section section3">
+                            <div class="velocity-arrow"><div class="arrow" style="border-bottom-color: #4caf50;"></div></div>
+                            <div class="pressure-label">低压强<br>高速度</div>
+                        </div>
+                    </div>
+                    <div class="control-panel">
+                        <button id="startBtn">开始演示</button>
+                        <button id="resetBtn">重置</button>
+                    </div>
+                    <div class="slider-container">
+                        <label for="flowControl">流量控制: </label>
+                        <input type="range" min="0" max="100" value="50" class="slider" id="flowControl">
+                    </div>
+                </div>
+                
+                <div class="animation-box">
+                    <h3>机翼升力原理</h3>
+                    <div style="position: relative; height: 200px; margin: 30px 0;">
+                        <div style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 200px; height: 60px; background: linear-gradient(to bottom, #78909c, #546e7a); clip-path: polygon(0 100%, 100% 100%, 70% 0, 30% 0);"></div>
+                        <div id="airflow" style="position: absolute; top: 20px; left: 0; width: 100%; height: 20px; background: rgba(179, 229, 252, 0.7);"></div>
+                        <div id="airflow2" style="position: absolute; bottom: 20px; left: 0; width: 100%; height: 20px; background: rgba(179, 229, 252, 0.7);"></div>
+                        <div style="position: absolute; top: 30%; left: 100%; transform: translateY(-50%); font-size: 2rem; color: #4fc3f7;">→</div>
+                        <div style="position: absolute; bottom: 30%; left: 100%; transform: translateY(50%); font-size: 1.5rem; color: #4fc3f7;">→</div>
+                    </div>
+                    <div class="explanation">
+                        <p>机翼上方空气流速快，压强小；下方空气流速慢，压强大。这种压强差产生向上的升力。</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+        
+        <section class="section">
+            <h2>实际应用</h2>
+            <div class="applications">
+                <div class="application-card">
+                    <div class="application-icon">✈️</div>
+                    <h3>飞机机翼</h3>
+                    <p>机翼的特殊形状使得上方空气流速快于下方，产生升力使飞机能够飞行。</p>
+                </div>
+                
+                <div class="application-card">
+                    <div class="application-icon">⚽</div>
+                    <h3>足球弧线球</h3>
+                    <p>旋转的足球带动周围空气流动，一侧空气流速快压强小，另一侧流速慢压强大，产生侧向力使球弯曲。</p>
+                </div>
+                
+                <div class="application-card">
+                    <div class="application-icon">噴射器</div>
+                    <h3>喷雾器</h3>
+                    <p>高速气流在喷嘴处产生低压区，将液体吸入并雾化喷出。</p>
+                </div>
+            </div>
+        </section>
+        
+        <section class="section">
+            <h2>计算示例</h2>
+            <div class="explanation">
+                <p>假设水流在水平管道中流动，管道某处的截面积变为原来的一半。已知粗管处的流速为2 m/s，压强为1.5×10⁵ Pa，水的密度为1000 kg/m³。求细管处的流速和压强。</p>
+                
+                <h3>解题步骤：</h3>
+                <p>1. 根据连续性方程 S₁v₁ = S₂v₂</p>
+                <p>   因为 S₂ = S₁/2，所以 v₂ = 2v₁ = 2×2 = 4 m/s</p>
+                
+                <p>2. 根据伯努利方程（水平管道，h₁ = h₂）：</p>
+                <p>   P₁ + ½ρv₁² = P₂ + ½ρv₂²</p>
+                
+                <p>3. 代入数值：</p>
+                <p>   1.5×10⁵ + ½×1000×2² = P₂ + ½×1000×4²</p>
+                <p>   1.5×10⁵ + 2000 = P₂ + 8000</p>
+                <p>   P₂ = 1.5×10⁵ + 2000 - 8000 = 1.44×10⁵ Pa</p>
+                
+                <p>因此，细管处的流速为4 m/s，压强为1.44×10⁵ Pa。</p>
+            </div>
+        </section>
+        
+        <footer>
+            <p>伯努利原理科学动画演示 | 面向高中生与大学生的流体力学教育</p>
+            <p>© 2025 流体力学教育项目</p>
+        </footer>
+    </div>
+
+    <script>
+        // 动画控制
+        document.addEventListener('DOMContentLoaded', function() {
+            const fluid = document.getElementById('fluid');
+            const startBtn = document.getElementById('startBtn');
+            const resetBtn = document.getElementById('resetBtn');
+            const flowControl = document.getElementById('flowControl');
+            
+            // 开始演示
+            startBtn.addEventListener('click', function() {
+                let width = 0;
+                const interval = setInterval(function() {
+                    if (width >= 100) {
+                        clearInterval(interval);
+                    } else {
+                        width += 0.5;
+                        fluid.style.width = width + '%';
+                    }
+                }, 30);
+            });
+            
+            // 重置演示
+            resetBtn.addEventListener('click', function() {
+                fluid.style.width = '0%';
+            });
+            
+            // 流量控制
+            flowControl.addEventListener('input', function() {
+                const value = this.value;
+                fluid.style.width = value + '%';
+            });
+            
+            // 机翼动画
+            const airflow = document.getElementById('airflow');
+            const airflow2 = document.getElementById('airflow2');
+            
+            setInterval(function() {
+                const pos = parseInt(airflow.style.left || '0');
+                airflow.style.left = ((pos + 2) % 100) + '%';
+                airflow2.style.left = ((pos + 1) % 100) + '%';
+            }, 100);
+        });
+    </script>
+</body>
+</html>

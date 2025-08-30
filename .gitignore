@@ -1,3 +1,5 @@
 .DS_Store
 /Jenkins/data
 /Tomcat/logs
+/Tomcat/webapps/examples
+/Tomcat/webapps/docs

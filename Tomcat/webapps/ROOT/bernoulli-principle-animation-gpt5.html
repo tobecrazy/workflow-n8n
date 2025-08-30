@@ -1,0 +1,656 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>伯努利原理：面向初高中生的可交互科学动画</title>
+  <style>
+    :root{
+      --bg:#0b1020;          /* 深色星空背景 */
+      --panel:#121936;       /* 面板底色 */
+      --card:#18224a;        /* 卡片底色 */
+      --ink:#e8ecff;         /* 文字颜色 */
+      --muted:#a6b0d8;       /* 次要文字 */
+      --accent:#7aa2ff;      /* 主题色 */
+      --good:#00d18f;        /* 正反馈 */
+      --warn:#ffcc00;
+      --hot:#ff6b6b;         /* 低压/高速提示色 */
+      --cold:#69d1ff;        /* 高压/低速提示色 */
+      --shadow: 0 10px 30px rgba(0,0,0,.35);
+      --radius: 16px;
+    }
+    *{box-sizing:border-box}
+    html,body{height:100%}
+    body{
+      margin:0; font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial;
+      color:var(--ink); background: radial-gradient(1200px 800px at 70% -10%, #1a2354 0%, var(--bg) 60%);
+      line-height:1.55;
+    }
+    header{
+      position:sticky; top:0; z-index:10; backdrop-filter: blur(10px);
+      background: linear-gradient(180deg, rgba(10,15,35,.8), rgba(10,15,35,.3));
+      border-bottom: 1px solid rgba(255,255,255,.06);
+    }
+    .wrap{max-width:1180px; margin:0 auto; padding:14px 20px; display:flex; align-items:center; gap:14px}
+    .brand{display:flex; align-items:center; gap:12px; font-weight:800; letter-spacing: .5px}
+    .brand .dot{width:12px;height:12px;border-radius:50%;background:conic-gradient(from 0deg,#62d1ff,#7aa2ff,#b38cff,#62d1ff)}
+    nav{margin-left:auto; display:flex; gap:14px; flex-wrap:wrap}
+    nav a{color:var(--muted); text-decoration:none; padding:8px 12px; border-radius:999px; transition:all .2s}
+    nav a:hover{background:rgba(255,255,255,.06); color:var(--ink)}
+
+    main{max-width:1180px; margin:26px auto; padding:0 20px 60px; display:grid; grid-template-columns: 340px 1fr; gap:22px}
+    @media (max-width: 980px){ main{grid-template-columns: 1fr} }
+
+    .side{
+      position:sticky; top:82px; align-self:start; background:var(--panel); border:1px solid rgba(255,255,255,.06);
+      border-radius: var(--radius); padding:18px; box-shadow: var(--shadow);
+    }
+    .side h3{margin:0 0 8px; font-size:18px}
+    .side ul{margin:8px 0 0 0; padding:0 0 0 18px; color:var(--muted)}
+
+    .card{background:var(--card); border:1px solid rgba(255,255,255,.06); border-radius:var(--radius); box-shadow: var(--shadow); padding:18px;}
+    .card h2{margin:6px 0 8px; font-size:22px}
+    .card h3{margin:18px 0 8px; font-size:18px}
+    .card p{color:var(--ink)}
+
+    .pill{display:inline-flex; align-items:center; gap:8px; padding:6px 10px; border:1px solid rgba(255,255,255,.08); border-radius:999px; color:var(--muted); font-size:12px}
+    .kpi{display:grid; grid-template-columns: repeat(3,1fr); gap:10px; margin-top:8px}
+    .kpi .k{background:rgba(255,255,255,.03); border:1px solid rgba(255,255,255,.06); border-radius:12px; padding:10px}
+    .k .v{font-weight:800; font-size:18px}
+    .row{display:grid; grid-template-columns: 1fr 1fr; gap:18px}
+    @media (max-width: 980px){ .row{grid-template-columns: 1fr} }
+
+
+    /* ======= 可视化区域 ======= */
+    .viz{position:relative; border-radius:12px; background:#0f1533; border:1px solid rgba(255,255,255,.08); overflow:hidden; min-height:220px}
+    .viz .label{position:absolute; font-size:12px; color:#dce6ff; background:rgba(0,0,0,.25); padding:4px 8px; border-radius:999px; border:1px solid rgba(255,255,255,.1)}
+    .legend{display:flex; gap:10px; flex-wrap:wrap; margin-top:10px; color:var(--muted)}
+    .badge{font-size:12px; padding:6px 10px; border-radius:999px; border:1px solid rgba(255,255,255,.08)}
+
+    .controls{display:grid; grid-template-columns: repeat(2, minmax(180px, 1fr)); gap:10px; margin-top:12px}
+    @media (max-width: 520px){ .controls{grid-template-columns: 1fr} }
+    .ctrl{background:rgba(255,255,255,.03); border:1px solid rgba(255,255,255,.06); border-radius:12px; padding:10px}
+    .ctrl label{display:flex; justify-content:space-between; gap:8px; font-size:12px; color:var(--muted)}
+    .ctrl input[type=range]{width:100%}
+    .btn{cursor:pointer; background:linear-gradient(180deg,#3b5cff,#2c43b7); color:white; border:none; border-radius:12px; padding:10px 14px; font-weight:700; box-shadow: 0 6px 20px rgba(90,120,255,.35)}
+    .btn.alt{background:linear-gradient(180deg,#114,#223)}
+
+    .eq{background:rgba(255,255,255,.04); border:1px solid rgba(255,255,255,.08); border-radius:12px; padding:12px; color:#e9f0ff}
+    code.k{padding:2px 6px; background:rgba(255,255,255,.06); border-radius:8px}
+
+    .note{color:var(--muted); font-size:13px}
+    .tip{border-left:4px solid var(--accent); padding-left:10px; color:#d6defa}
+
+    /* 小装饰星星 */
+    .sky{position:absolute; inset:0; pointer-events:none}
+    .star{position:absolute; width:2px; height:2px; background:radial-gradient(circle, #fff, transparent); opacity:.5; animation: twinkle 2.5s infinite}
+    @keyframes twinkle{ 50%{ opacity: .2 } }
+  </style>
+  <!-- 数学公式渲染（需要联网） -->
+  <script>
+    // 轻量的行内公式渲染：把 $...$ 包住的内容高亮显示（离线容错）。
+    // 若用户联网，也会加载 MathJax 进一步美化。
+    document.addEventListener('DOMContentLoaded', () => {
+      document.querySelectorAll('[data-math]')?.forEach(el=>{
+        el.innerHTML = el.textContent.replace(/\$(.+?)\$/g, '<code class="k">$1</code>');
+      });
+    })
+  </script>
+  <script async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+</head>
+<body>
+  <header>
+    <div class="wrap">
+      <div class="brand"><span class="dot"></span>伯努利原理 · 可交互科学动画</div>
+      <nav>
+        <a href="#intro">现象与直觉</a>
+        <a href="#venturi">文丘里管演示</a>
+        <a href="#wing">机翼与升力</a>
+        <a href="#atomizer">吸管/雾化器</a>
+        <a href="#lab">伯努利方程实验室</a>
+      </nav>
+    </div>
+  </header>
+
+  <main>
+    <aside class="side">
+      <h3>学习目标</h3>
+      <ul>
+        <li>认识高速流动与低压现象（“越快越低压”）。</li>
+        <li>理解能量守恒视角下的伯努利方程。</li>
+        <li>能够用公式 $p+\tfrac{1}{2}\rho v^2+\rho gh=\text{常数}$ 分析简单问题。</li>
+        <li>通过交互动画，感受文丘里效应、机翼升力、喷雾器工作原理。</li>
+      </ul>
+      <div class="tip" style="margin-top:10px">提示：把滑块到处拖拖看；注意颜色——<span style="color:var(--hot)">偏红=低压/高速</span>，<span style="color:var(--cold)">偏蓝=高压/低速</span>。</div>
+    </aside>
+
+    <section id="intro" class="card">
+      <span class="pill">第一部分 · 直观现象</span>
+      <h2>伯努利的现象与原理（通俗版）</h2>
+      <p>在空气或水这样的流体里，<strong>流得越快的地方，压强往往越低</strong>。这叫“<strong>伯努利效应</strong>”。你可能见过这些现象：</p>
+      <ul>
+        <li>把两张纸边缘对齐，留一点间隙，对着中间吹气，纸张会相互靠拢（间隙内空气更快 → 压强更低）。</li>
+        <li>淋浴时浴帘会被“吸”向里侧（热蒸汽沿着水流快速通过，内侧压强更低）。</li>
+        <li>喷雾器/香水瓶：上方气流加速，带来低压，把液体从细管中“吸”上来并雾化。</li>
+      </ul>
+      <div class="eq" data-math>
+        伯努利方程（适用于稳定、不可压缩、无明显粘性耗散的流动沿一条流线）：
+        \[\boxed{\;p + \tfrac{1}{2}\,\rho v^2 + \rho g h = \text{常数}\;}\]
+        这里 $p$ 是压强，$\rho$ 是密度，$v$ 是流速，$h$ 是高度，$g$ 是重力加速度。
+      </div>
+      <p class="note">注意：真实世界中的粘性、涡流、可压缩性会让结果与理想模型略有差异，但本页动画足以建立直观与定量入门。</p>
+    </section>
+
+    <!-- 文丘里管演示 -->
+    <section id="venturi" class="card">
+      <span class="pill">第二部分 · 文丘里效应</span>
+      <h2>文丘里管：变窄 → 流速增大 → 压强降低</h2>
+      <div class="viz" id="venturiViz" aria-label="文丘里管动画" role="img"></div>
+      <div class="legend">
+        <span class="badge">颜色映射：<span style="color:var(--hot)">红=低压</span>，<span style="color:var(--cold)">蓝=高压</span></span>
+        <span class="badge">小圆点=流体颗粒</span>
+      </div>
+      <div class="controls">
+        <div class="ctrl">
+          <label>入口直径 D₁（相对单位） <span id="d1Val">80</span></label>
+          <input id="d1" type="range" min="60" max="120" value="80" />
+        </div>
+        <div class="ctrl">
+          <label>喉部直径 D₂（相对单位） <span id="d2Val">40</span></label>
+          <input id="d2" type="range" min="20" max="100" value="40" />
+        </div>
+        <div class="ctrl">
+          <label>入口体积流量 Q（相对） <span id="qVal">1.00</span></label>
+          <input id="q" type="range" min="20" max="200" value="100" />
+        </div>
+        <div class="ctrl">
+          <button class="btn" id="resetVenturi">重置参数</button>
+        </div>
+      </div>
+      <div class="kpi">
+        <div class="k"><div class="v" id="v1Out">v₁=–</div><div class="t">入口平均流速</div></div>
+        <div class="k"><div class="v" id="v2Out">v₂=–</div><div class="t">喉部平均流速</div></div>
+        <div class="k"><div class="v" id="dpOut">Δp=–</div><div class="t">按伯努利估计的压强差（入口-喉部）</div></div>
+      </div>
+    </section>
+
+    <!-- 机翼与升力 -->
+    <section id="wing" class="card">
+      <span class="pill">第三部分 · 机翼升力（入门直觉）</span>
+      <h2>机翼上的快与慢：上表面更快 → 压强更低 → 产生升力</h2>
+      <div class="viz" id="wingViz" aria-label="机翼流线动画" role="img"></div>
+      <div class="controls">
+        <div class="ctrl">
+          <label>迎角（°） <span id="aoaVal">5</span></label>
+          <input id="aoa" type="range" min="-2" max="12" value="5" />
+        </div>
+        <div class="ctrl">
+          <label>自由来流速度 v∞（相对） <span id="vInfVal">1.00</span></label>
+          <input id="vInf" type="range" min="20" max="200" value="100" />
+        </div>
+        <div class="ctrl">
+          <button class="btn alt" id="resetWing">重置机翼</button>
+        </div>
+      </div>
+      <p class="note">本动画用简化的流线与速度分布展示“上快下慢”的直觉以说明升力来源之一（还可用动量定理/循环理论等更严谨方法解释）。</p>
+    </section>
+
+    <!-- 雾化器/吸管 -->
+    <section id="atomizer" class="card">
+      <span class="pill">第四部分 · 喷雾器/香水瓶</span>
+      <h2>上方高速气流 → 喉部低压 → 液体被吸上来</h2>
+      <div class="viz" id="atomViz" aria-label="雾化器动画" role="img"></div>
+      <div class="controls">
+        <div class="ctrl">
+          <label>上方气流速度（相对） <span id="atomVVal">1.00</span></label>
+          <input id="atomV" type="range" min="20" max="200" value="100" />
+        </div>
+        <div class="ctrl">
+          <label>液体密度 ρ<sub>液</sub>（相对） <span id="rhoLVal">1.00</span></label>
+          <input id="rhoL" type="range" min="50" max="150" value="100" />
+        </div>
+        <div class="ctrl">
+          <button class="btn alt" id="resetAtom">重置雾化器</button>
+        </div>
+      </div>
+    </section>
+
+    <!-- 伯努利方程实验室 -->
+    <section id="lab" class="card">
+      <span class="pill">第五部分 · 公式到数值</span>
+      <h2>伯努利方程实验室：动手算一算</h2>
+      <p>设两点 1 和 2 沿同一条流线。我们固定 $\rho=1.0$、$g=9.8$（相对单位），通过改变 $v_1, h_1, h_2$ 与总能量常数来观察 $p_1,p_2$ 的变化。</p>
+      <div class="row">
+        <div>
+          <div class="controls">
+            <div class="ctrl">
+              <label>总能量常数 C <span id="cVal">1200</span></label>
+              <input id="C" type="range" min="300" max="2400" value="1200" />
+            </div>
+            <div class="ctrl">
+              <label>v₁（速度） <span id="labV1Val">8.0</span></label>
+              <input id="labV1" type="range" min="0" max="200" value="80" />
+            </div>
+            <div class="ctrl">
+              <label>h₁（高度） <span id="labH1Val">0.0</span></label>
+              <input id="labH1" type="range" min="-50" max="50" value="0" />
+            </div>
+            <div class="ctrl">
+              <label>h₂（高度） <span id="labH2Val">10.0</span></label>
+              <input id="labH2" type="range" min="-50" max="50" value="10" />
+            </div>
+            <div class="ctrl">
+              <label>v₂（速度） <span id="labV2Val">12.0</span></label>
+              <input id="labV2" type="range" min="0" max="200" value="120" />
+            </div>
+            <div class="ctrl"><button class="btn" id="resetLab">重置实验室</button></div>
+          </div>
+        </div>
+        <div>
+          <div class="viz" id="labViz" style="min-height:260px"></div>
+          <div class="kpi">
+            <div class="k"><div class="v" id="labP1">p₁=–</div><div class="t">点 1 压强</div></div>
+            <div class="k"><div class="v" id="labP2">p₂=–</div><div class="t">点 2 压强</div></div>
+            <div class="k"><div class="v" id="labCheck">检验=–</div><div class="t">代回 $p+\tfrac{1}{2}\rho v^2+\rho gh$ 是否≈C</div></div>
+          </div>
+        </div>
+      </div>
+      <p class="note">当 $v_2$ 变大而 $h_2$ 不变时，你会看到 $p_2$ 通常减小；若把 $h_2$ 增大（流体爬高），即使速度不变，$p_2$ 也会变小，因为一部分能量“去抬高”了流体。</p>
+    </section>
+  </main>
+
+  <!-- 背景点点星空（纯装饰） -->
+  <div class="sky" aria-hidden="true"></div>
+
+  <script>
+    // ======= 小星星装饰 =======
+    (function stars(){
+      const sky=document.querySelector('.sky');
+      for(let i=0;i<100;i++){
+        const s=document.createElement('div'); s.className='star';
+        s.style.left=Math.random()*100+'%'; s.style.top=Math.random()*100+'%';
+        s.style.animationDelay=(Math.random()*2)+'s'; s.style.opacity=(0.15+Math.random()*0.6).toFixed(2);
+        sky.appendChild(s);
+      }
+    })();
+
+    // 常量（相对单位）
+    const RHO = 1.0, G = 9.8;
+
+    // ======= 文丘里动画 =======
+    const vViz = document.getElementById('venturiViz');
+    const d1 = document.getElementById('d1');
+    const d2 = document.getElementById('d2');
+    const q  = document.getElementById('q');
+    const d1Val = document.getElementById('d1Val');
+    const d2Val = document.getElementById('d2Val');
+    const qVal  = document.getElementById('qVal');
+    const v1Out = document.getElementById('v1Out');
+    const v2Out = document.getElementById('v2Out');
+    const dpOut = document.getElementById('dpOut');
+    const resetVenturi = document.getElementById('resetVenturi');
+
+    let venturiParticles=[]; let venturiGeom=null; let raf1=null;
+
+    function colorByPressure(p){
+      // p 高→蓝；低→红：映射到 0..1
+      // 这里我们只做相对映射
+      const clamp=(x,a,b)=>Math.max(a,Math.min(b,x));
+      const t=clamp((p-0)/(2000-0),0,1);
+      const r = Math.round(255*(1-t));
+      const b = Math.round(255*t);
+      return `rgb(${r},120,${b})`;
+    }
+
+    function layoutVenturi(){
+      vViz.innerHTML='';
+      const w=vViz.clientWidth, h=Math.max(220, vViz.clientHeight);
+      const pad=20; const L=w-2*pad; const mid=h/2;
+      const D1=+d1.value, D2=+d2.value; // 相对直径
+
+      // 画出管道（上、下边界）
+      const top=document.createElement('canvas'); top.width=w; top.height=h; vViz.appendChild(top);
+      const ctx=top.getContext('2d');
+      ctx.clearRect(0,0,w,h);
+      ctx.lineWidth=2; ctx.strokeStyle='rgba(255,255,255,.5)'; ctx.fillStyle='rgba(255,255,255,.04)';
+
+      // 形状：左宽右宽中间窄（文丘里）
+      const half1=D1/2, half2=D2/2;
+      const x1=pad, x2=pad+L*0.35, x3=pad+L*0.65, x4=pad+L;
+
+      function yTop(x){
+        if(x<x2) return mid-half1;
+        if(x>x3) return mid-half1;
+        const t=(x-x2)/(x3-x2); // 0..1
+        const smooth=t*t*(3-2*t); // 平滑过渡
+        return mid - (half2*smooth + half1*(1-smooth));
+      }
+      function yBot(x){
+        if(x<x2) return mid+half1;
+        if(x>x3) return mid+half1;
+        const t=(x-x2)/(x3-x2);
+        const smooth=t*t*(3-2*t);
+        return mid + (half2*smooth + half1*(1-smooth));
+      }
+
+      ctx.beginPath();
+      ctx.moveTo(x1, yTop(x1));
+      for(let x=x1; x<=x4; x+=4) ctx.lineTo(x, yTop(x));
+      for(let x=x4; x>=x1; x-=4) ctx.lineTo(x, yBot(x));
+      ctx.closePath(); ctx.fill(); ctx.stroke();
+
+      // 流速估计：v = Q / A
+      const Q=+q.value/100; // 0.2..2.0
+      const A1=Math.PI*(D1/2)**2, A2=Math.PI*(D2/2)**2;
+      const v1=Q/Math.max(1,A1/2000); // 缩放到可视化量级
+      const v2=Q/Math.max(1,A2/2000);
+
+      // 伯努利压差（相对）：Δp = 1/2 ρ (v2^2 - v1^2)
+      const dp=0.5*RHO*(v1*v1 - v2*v2); // 入口 - 喉部
+
+      v1Out.textContent = `v₁=${v1.toFixed(2)}`;
+      v2Out.textContent = `v₂=${v2.toFixed(2)}`;
+      dpOut.textContent = `Δp≈${dp.toFixed(2)}`;
+
+      // 生成粒子
+      venturiParticles = [];
+      const n=140;
+      for(let i=0;i<n;i++){
+        const px = x1 + Math.random()*(x4-x1);
+        const pt = (px-x1)/(x4-x1);
+        const yyTop = yTop(px), yyBot=yBot(px);
+        const py = yyTop + 6 + Math.random()*(yyBot-yyTop-12);
+        venturiParticles.push({x:px, y:py, v:0});
+      }
+
+      venturiGeom = {x1,x2,x3,x4,yTop,yBot, v1, v2};
+
+      // 标签
+      const tag1=document.createElement('div'); tag1.className='label'; tag1.style.left=(x1+10)+'px'; tag1.style.top=(yTop(x1)-24)+'px'; tag1.textContent='入口（高压·较低速）'; vViz.appendChild(tag1);
+      const tag2=document.createElement('div'); tag2.className='label'; tag2.style.left=(x2+10)+'px'; tag2.style.top=(yTop(x2)-24)+'px'; tag2.textContent='喉部（低压·高速）'; vViz.appendChild(tag2);
+
+      cancelAnimationFrame(raf1);
+      animateVenturi();
+    }
+
+    function animateVenturi(){
+      const cn=vViz.querySelector('canvas'); if(!cn) return; const ctx=cn.getContext('2d');
+      const {x1,x4,yTop,yBot} = venturiGeom;
+      // 重绘背景区域（半透明覆盖制造拖影效果）
+      ctx.fillStyle='rgba(15,21,51,.28)'; ctx.fillRect(0,0,cn.width,cn.height);
+
+      for(const p of venturiParticles){
+        // 局部截面高度决定局部面积，从而决定局部速度（近似）
+        const t=(p.x - x1)/(x4-x1); // 0..1
+        const yt=yTop(p.x), yb=yBot(p.x); const H = Math.max(12, yb-yt);
+        const localV = 2.2 / (H/120); // 仅用于动画的相对速度
+        p.v = localV;
+        p.x += p.v;
+        if(p.x > x4) p.x = x1+2;
+
+        // 压力颜色估计：速度越大→压强越低→更红
+        const pColor = colorByPressure( 1200 - 400*localV );
+        ctx.beginPath(); ctx.fillStyle = pColor; ctx.arc(p.x, p.y, 2.2, 0, Math.PI*2); ctx.fill();
+      }
+      raf1 = requestAnimationFrame(animateVenturi);
+    }
+
+    d1.addEventListener('input', ()=>{ d1Val.textContent=d1.value; layoutVenturi(); });
+    d2.addEventListener('input', ()=>{ d2Val.textContent=d2.value; layoutVenturi(); });
+    q.addEventListener('input',  ()=>{ qVal.textContent=(+q.value/100).toFixed(2); layoutVenturi(); });
+    resetVenturi.addEventListener('click', ()=>{ d1.value=80; d2.value=40; q.value=100; d1Val.textContent='80'; d2Val.textContent='40'; qVal.textContent='1.00'; layoutVenturi(); });
+
+    // ======= 机翼动画（简化流线） =======
+    const wingViz = document.getElementById('wingViz');
+    const aoa = document.getElementById('aoa');
+    const vInf = document.getElementById('vInf');
+    const aoaVal = document.getElementById('aoaVal');
+    const vInfVal = document.getElementById('vInfVal');
+    const resetWing = document.getElementById('resetWing');
+
+    let wingParticles=[]; let wingGeom=null; let raf2=null;
+
+    function layoutWing(){
+      wingViz.innerHTML='';
+      const w=wingViz.clientWidth, h=Math.max(220, wingViz.clientHeight);
+      const cn=document.createElement('canvas'); cn.width=w; cn.height=h; wingViz.appendChild(cn);
+      const ctx=cn.getContext('2d');
+
+      const cx=w*0.36, cy=h*0.56; const chord=w*0.44; const thickness=chord*0.12; const AOA=(+aoa.value)*Math.PI/180;
+
+      // 机翼轮廓（对称翼型的简化）
+      function camberY(x){ // -0.5..0.5 → camber
+        const t = 1 - 4*(x-0.5)*(x-0.5); // 抛物线（中厚两端薄）
+        return t*thickness/2;
+      }
+
+      ctx.translate(cx, cy); ctx.rotate(AOA); ctx.translate(-cx, -cy);
+      ctx.beginPath();
+      for(let i=0;i<=100;i++){
+        const x=i/100; const X=cx - chord/2 + chord*x; const Y=cy - camberY(x);
+        i?ctx.lineTo(X,Y):ctx.moveTo(X,Y);
+      }
+      for(let i=100;i>=0;i--){
+        const x=i/100; const X=cx - chord/2 + chord*x; const Y=cy + camberY(x);
+        ctx.lineTo(X,Y);
+      }
+      ctx.closePath(); ctx.fillStyle='rgba(255,255,255,.06)'; ctx.strokeStyle='rgba(255,255,255,.55)'; ctx.lineWidth=2; ctx.fill(); ctx.stroke();
+
+      // 放置流线粒子（上下各 N 条）
+      wingParticles=[]; const N=7; const rows=[-1,1];
+      for(const side of rows){
+        for(let j=0;j<N;j++){
+          for(let i=0;i<22;i++){
+            const y = cy + side*(j+1)*10 + (Math.random()*4-2);
+            const x = -40 + Math.random()*w*0.6;
+            wingParticles.push({x,y, side, speed:1});
+          }
+        }
+      }
+
+      // 标签
+      const lab1=document.createElement('div'); lab1.className='label'; lab1.style.right='12px'; lab1.style.top='12px'; lab1.textContent='上表面：更快 → 更低压'; wingViz.appendChild(lab1);
+      const lab2=document.createElement('div'); lab2.className='label'; lab2.style.right='12px'; lab2.style.top='40px'; lab2.textContent='下表面：更慢 → 更高压'; wingViz.appendChild(lab2);
+
+      wingGeom={w,h,cx,cy,chord,thickness,AOA};
+
+      cancelAnimationFrame(raf2); animateWing();
+    }
+
+    function animateWing(){
+      const cn=wingViz.querySelector('canvas'); const ctx=cn.getContext('2d');
+      const {w,h,cx,cy,chord,thickness,AOA}=wingGeom;
+      ctx.fillStyle='rgba(15,21,51,.28)'; ctx.fillRect(0,0,w,h);
+
+      function camberY(x){ const t = 1 - 4*(x-0.5)*(x-0.5); return t*thickness/2; }
+
+      // 简化的速度场：上表面加速因子 > 下表面
+      const VINF=+vInf.value/100; // 0.2..2
+      for(const p of wingParticles){
+        // 根据 y 与翼型的相对位置确定加速
+        const relY = (p.y - cy)/thickness; // 上负下正
+        const over = p.side<0; // 上表面
+        const acc = over ? 1.5 : 0.7; // 上更快、下更慢（示意）
+        const speed = VINF*acc*(1 + 0.15*Math.cos((p.x-cx)/80));
+        p.x += 1.5 + 2.4*speed;
+        if(p.x> w+30) p.x = -30;
+
+        // 压力颜色（速度越大越红）
+        const pColor = `rgba(${Math.min(255,160+180*speed)},120,${Math.max(50,255-200*speed)},0.95)`;
+        ctx.beginPath(); ctx.fillStyle=pColor; ctx.arc(p.x, p.y, 2, 0, Math.PI*2); ctx.fill();
+      }
+
+      // 升力箭头
+      ctx.save();
+      ctx.strokeStyle='rgba(255,255,255,.7)'; ctx.fillStyle='rgba(122,162,255,.8)'; ctx.lineWidth=2;
+      ctx.beginPath(); ctx.moveTo(cx+chord*0.6, cy);
+      ctx.lineTo(cx+chord*0.6, cy-40 - (+vInf.value/10));
+      ctx.stroke();
+      ctx.beginPath(); ctx.moveTo(cx+chord*0.6, cy-40 - (+vInf.value/10));
+      ctx.lineTo(cx+chord*0.6-6, cy-30 - (+vInf.value/10));
+      ctx.lineTo(cx+chord*0.6+6, cy-30 - (+vInf.value/10));
+      ctx.closePath(); ctx.fill();
+      ctx.restore();
+
+      raf2=requestAnimationFrame(animateWing);
+    }
+
+    aoa.addEventListener('input', ()=>{ aoaVal.textContent=aoa.value; layoutWing(); });
+    vInf.addEventListener('input', ()=>{ vInfVal.textContent=(+vInf.value/100).toFixed(2); });
+    resetWing.addEventListener('click', ()=>{ aoa.value=5; vInf.value=100; aoaVal.textContent='5'; vInfVal.textContent='1.00'; layoutWing(); });
+
+    // ======= 雾化器动画 =======
+    const atomViz=document.getElementById('atomViz');
+    const atomV=document.getElementById('atomV'); const rhoL=document.getElementById('rhoL');
+    const atomVVal=document.getElementById('atomVVal'); const rhoLVal=document.getElementById('rhoLVal');
+    const resetAtom=document.getElementById('resetAtom');
+    let raf3=null; let droplets=[];
+
+    function layoutAtom(){
+      atomViz.innerHTML=''; const w=atomViz.clientWidth, h=Math.max(220, atomViz.clientHeight);
+      const cn=document.createElement('canvas'); cn.width=w; cn.height=h; atomViz.appendChild(cn);
+      const ctx=cn.getContext('2d');
+
+      // 结构：水平喷嘴+竖直细管+下方液面
+      const mouth={x:w*0.18, y:h*0.45, L:w*0.6, H:14};
+      const straw={x:w*0.55, y:h*0.45, W:12, H:h*0.32};
+      const liquidY=h-30;
+
+      function drawStatic(){
+        ctx.clearRect(0,0,w,h);
+        // 喷嘴通道
+        ctx.fillStyle='rgba(255,255,255,.06)'; ctx.strokeStyle='rgba(255,255,255,.5)'; ctx.lineWidth=2;
+        ctx.fillRect(mouth.x, mouth.y-mouth.H/2, mouth.L, mouth.H); ctx.strokeRect(mouth.x, mouth.y-mouth.H/2, mouth.L, mouth.H);
+        // 细管
+        ctx.fillRect(straw.x-straw.W/2, straw.y, straw.W, straw.H);
+        ctx.strokeRect(straw.x-straw.W/2, straw.y, straw.W, straw.H);
+        // 液体
+        ctx.fillStyle='rgba(106, 209, 255, .35)'; ctx.fillRect(30, liquidY, w-60, h-liquidY);
+        ctx.strokeStyle='rgba(106, 209, 255, .8)'; ctx.beginPath(); ctx.moveTo(30, liquidY); ctx.lineTo(w-30, liquidY); ctx.stroke();
+      }
+
+      drawStatic();
+
+      const V = +atomV.value/100; // 顶部气流速度
+      const dens = +rhoL.value/100; // 液体密度
+      const suction = 0.5*RHO*(V*V); // 动压 ~ 低压能力
+      const head = suction/(dens*G+1e-6); // 可克服的液柱高度（相对）
+
+      // 文本标签
+      const lbl=document.createElement('div'); lbl.className='label'; lbl.style.left=(mouth.x+8)+'px'; lbl.style.top=(mouth.y-mouth.H/2-26)+'px';
+      lbl.textContent = `动压≈${suction.toFixed(2)}，可吸上液柱≈${(head*30).toFixed(1)}（相对单位）`;
+      atomViz.appendChild(lbl);
+
+      // 粒子：上方气流
+      let air=[]; for(let i=0;i<120;i++) air.push({x: mouth.x + Math.random()*mouth.L, y: mouth.y + (Math.random()*mouth.H - mouth.H/2), v: 2+ 3*V});
+      // 液滴
+      droplets=[];
+
+      function tick(){
+        drawStatic();
+        // 顶部气流
+        for(const a of air){
+          a.x += a.v; if(a.x>mouth.x+mouth.L) a.x = mouth.x;
+          const col = `rgba(${Math.min(255, 160+120*V)},120,${Math.max(60, 255-180*V)},0.95)`;
+          ctx.beginPath(); ctx.fillStyle=col; ctx.arc(a.x, a.y, 2, 0, Math.PI*2); ctx.fill();
+        }
+        // 液体上升与被雾化
+        const rise = Math.min(straw.H, head*120); // 上升高度相对
+        const topY = straw.y + straw.H - rise;
+        ctx.fillStyle='rgba(106, 209, 255, .7)'; ctx.fillRect(straw.x-straw.W/2+2, topY, straw.W-4, rise);
+
+        // 若到喷嘴附近，则形成雾滴
+        if(rise>straw.H*0.9){
+          // 生成一些液滴向右喷出
+          for(let i=0;i<4;i++){
+            droplets.push({x: straw.x+8, y: mouth.y + (Math.random()*10-5), vx: 2+4*V + Math.random()*2, vy: (Math.random()-0.5)*1.5, life: 120});
+          }
+        }
+        for(const d of droplets){
+          d.x += d.vx; d.y += d.vy; d.vy += 0.02; d.life--; // 简单重力
+        }
+        droplets = droplets.filter(d=>d.life>0 && d.x< mouth.x+mouth.L+30);
+        ctx.fillStyle='rgba(106, 209, 255, .85)';
+        for(const d of droplets){ ctx.beginPath(); ctx.arc(d.x, d.y, 1.8, 0, Math.PI*2); ctx.fill(); }
+
+        raf3 = requestAnimationFrame(tick);
+      }
+
+      cancelAnimationFrame(raf3); tick();
+    }
+
+    atomV.addEventListener('input', ()=>{ atomVVal.textContent=(+atomV.value/100).toFixed(2); });
+    rhoL.addEventListener('input', ()=>{ rhoLVal.textContent=(+rhoL.value/100).toFixed(2); });
+    resetAtom.addEventListener('click', ()=>{ atomV.value=100; rhoL.value=100; atomVVal.textContent='1.00'; rhoLVal.textContent='1.00'; layoutAtom(); });
+
+    // ======= 伯努利实验室 =======
+    const C=document.getElementById('C');
+    const labV1=document.getElementById('labV1');
+    const labV2=document.getElementById('labV2');
+    const labH1=document.getElementById('labH1');
+    const labH2=document.getElementById('labH2');
+    const labV1Val=document.getElementById('labV1Val');
+    const labV2Val=document.getElementById('labV2Val');
+    const labH1Val=document.getElementById('labH1Val');
+    const labH2Val=document.getElementById('labH2Val');
+    const labP1=document.getElementById('labP1');
+    const labP2=document.getElementById('labP2');
+    const labCheck=document.getElementById('labCheck');
+    const labViz=document.getElementById('labViz');
+    const resetLab=document.getElementById('resetLab');
+
+    function updateLab(){
+      const c=+C.value; const v1=+labV1.value/10; const v2=+labV2.value/10; const h1=+labH1.value/10; const h2=+labH2.value/10;
+      labV1Val.textContent=v1.toFixed(1); labV2Val.textContent=v2.toFixed(1);
+      labH1Val.textContent=h1.toFixed(1); labH2Val.textContent=h2.toFixed(1); document.getElementById('cVal').textContent=c;
+      // p = C - 1/2 rho v^2 - rho g h
+      const p1 = c - 0.5*RHO*v1*v1 - RHO*G*h1;
+      const p2 = c - 0.5*RHO*v2*v2 - RHO*G*h2;
+      labP1.textContent = `p₁=${p1.toFixed(2)}`;
+      labP2.textContent = `p₂=${p2.toFixed(2)}`;
+      const check1 = p1 + 0.5*RHO*v1*v1 + RHO*G*h1;
+      const check2 = p2 + 0.5*RHO*v2*v2 + RHO*G*h2;
+      labCheck.textContent = `检验：C₁=${check1.toFixed(1)}，C₂=${check2.toFixed(1)}`;
+
+      // 可视化：两根能量柱（压强柱 + 动能柱 + 位能柱）
+      const w=labViz.clientWidth, h=Math.max(260, labViz.clientHeight);
+      labViz.innerHTML=''; const cn=document.createElement('canvas'); cn.width=w; cn.height=h; labViz.appendChild(cn);
+      const ctx=cn.getContext('2d');
+      function drawBar(x, p, v, hh, label){
+        const scale= 140 / Math.max(1, c*0.6);
+        const P = Math.max(0, p*scale), K=(0.5*RHO*v*v)*scale, H=(RHO*G*hh)*scale;
+        const base=h-30; let y=base;
+        // 压强（蓝）
+        ctx.fillStyle='rgba(105,209,255,.85)'; ctx.fillRect(x, y-P, 44, P); y-=P;
+        // 动能（红）
+        ctx.fillStyle='rgba(255,107,107,.9)'; ctx.fillRect(x, y-K, 44, K); y-=K;
+        // 位能（黄）
+        ctx.fillStyle='rgba(255,204,0,.9)'; ctx.fillRect(x, y-H, 44, H);
+        // 边框与标签
+        ctx.strokeStyle='rgba(255,255,255,.6)'; ctx.strokeRect(x, base- (P+K+H), 44, P+K+H);
+        ctx.fillStyle='rgba(220,230,255,.9)'; ctx.fillText(label, x+8, base+14);
+      }
+      ctx.font='12px ui-sans-serif';
+      drawBar(w*0.32, p1, v1, h1, '点1');
+      drawBar(w*0.62, p2, v2, h2, '点2');
+    }
+
+    C.addEventListener('input', updateLab);
+    labV1.addEventListener('input', updateLab);
+    labV2.addEventListener('input', updateLab);
+    labH1.addEventListener('input', updateLab);
+    labH2.addEventListener('input', updateLab);
+    resetLab.addEventListener('click', ()=>{ C.value=1200; labV1.value=80; labV2.value=120; labH1.value=0; labH2.value=10; updateLab(); });
+
+    // ======= 初始化 =======
+    function init(){
+      d1Val.textContent=d1.value; d2Val.textContent=d2.value; qVal.textContent=(+q.value/100).toFixed(2);
+      layoutVenturi();
+      aoaVal.textContent=aoa.value; vInfVal.textContent=(+vInf.value/100).toFixed(2); layoutWing();
+      atomVVal.textContent=(+atomV.value/100).toFixed(2); rhoLVal.textContent=(+rhoL.value/100).toFixed(2); layoutAtom();
+      updateLab();
+    }
+    window.addEventListener('load', init);
+  </script>
+</body>
+</html>

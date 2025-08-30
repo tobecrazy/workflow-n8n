@@ -1,0 +1,619 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>伯努利原理科学动画</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Microsoft YaHei', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+            color: #333;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 20px;
+            padding: 40px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+        }
+
+        h1 {
+            text-align: center;
+            color: #5a67d8;
+            font-size: 2.5em;
+            margin-bottom: 10px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.1);
+        }
+
+        .subtitle {
+            text-align: center;
+            color: #666;
+            margin-bottom: 40px;
+            font-size: 1.2em;
+        }
+
+        .section {
+            margin-bottom: 40px;
+            padding: 25px;
+            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+            border-radius: 15px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+        }
+
+        h2 {
+            color: #4a5568;
+            margin-bottom: 20px;
+            font-size: 1.8em;
+            border-left: 5px solid #5a67d8;
+            padding-left: 15px;
+        }
+
+        .demo-container {
+            background: white;
+            border-radius: 10px;
+            padding: 20px;
+            margin: 20px 0;
+            box-shadow: 0 3px 10px rgba(0,0,0,0.1);
+        }
+
+        canvas {
+            border: 2px solid #e2e8f0;
+            border-radius: 10px;
+            display: block;
+            margin: 0 auto;
+            background: #f7fafc;
+        }
+
+        .controls {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            margin-top: 20px;
+            flex-wrap: wrap;
+        }
+
+        button {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 12px 30px;
+            border-radius: 25px;
+            font-size: 16px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
+        }
+
+        button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(102, 126, 234, 0.6);
+        }
+
+        button:active {
+            transform: translateY(0);
+        }
+
+        .equation-box {
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            margin: 20px 0;
+            text-align: center;
+            box-shadow: 0 3px 10px rgba(0,0,0,0.1);
+        }
+
+        .equation {
+            font-size: 1.4em;
+            color: #2d3748;
+            margin: 15px 0;
+            font-family: 'Courier New', monospace;
+        }
+
+        .explanation {
+            background: #edf2f7;
+            padding: 15px;
+            border-radius: 8px;
+            margin: 15px 0;
+            line-height: 1.8;
+        }
+
+        .variable-list {
+            text-align: left;
+            display: inline-block;
+            margin: 15px auto;
+        }
+
+        .variable-list li {
+            margin: 8px 0;
+            list-style: none;
+            position: relative;
+            padding-left: 25px;
+        }
+
+        .variable-list li:before {
+            content: "▸";
+            position: absolute;
+            left: 0;
+            color: #5a67d8;
+        }
+
+        .interactive-demo {
+            display: flex;
+            justify-content: space-around;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 20px;
+            margin: 20px 0;
+        }
+
+        .demo-item {
+            flex: 1;
+            min-width: 250px;
+            text-align: center;
+            padding: 20px;
+            background: white;
+            border-radius: 10px;
+            box-shadow: 0 3px 10px rgba(0,0,0,0.1);
+        }
+
+        .slider-container {
+            margin: 15px 0;
+        }
+
+        input[type="range"] {
+            width: 100%;
+            margin: 10px 0;
+        }
+
+        .value-display {
+            font-size: 1.2em;
+            color: #5a67d8;
+            font-weight: bold;
+        }
+
+        .phenomenon-card {
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            margin: 15px 0;
+            box-shadow: 0 3px 10px rgba(0,0,0,0.1);
+            transition: transform 0.3s ease;
+        }
+
+        .phenomenon-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 5px 20px rgba(0,0,0,0.15);
+        }
+
+        .phenomenon-title {
+            color: #5a67d8;
+            font-size: 1.3em;
+            margin-bottom: 10px;
+            font-weight: bold;
+        }
+
+        @keyframes flow {
+            from { transform: translateX(-100%); }
+            to { transform: translateX(100%); }
+        }
+
+        .loading {
+            text-align: center;
+            padding: 20px;
+            font-size: 1.2em;
+            color: #5a67d8;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🌊 伯努利原理科学动画</h1>
+        <p class="subtitle">探索流体力学的奇妙世界</p>
+
+        <div class="section">
+            <h2>什么是伯努利原理？</h2>
+            <div class="explanation">
+                <p><strong>伯努利原理</strong>是流体力学中的基本定律，由瑞士科学家丹尼尔·伯努利在1738年提出。</p>
+                <p style="margin-top: 10px;">简单来说：<strong>流体的速度越快，压强就越小；速度越慢，压强就越大。</strong></p>
+                <p style="margin-top: 10px;">这个原理解释了为什么飞机能够飞起来，为什么两张纸靠近时会相互吸引等许多有趣的现象！</p>
+            </div>
+        </div>
+
+        <div class="section">
+            <h2>动画演示1：管道流动</h2>
+            <div class="demo-container">
+                <canvas id="pipeCanvas" width="800" height="300"></canvas>
+                <div class="controls">
+                    <button onclick="togglePipeAnimation()">开始/暂停动画</button>
+                    <button onclick="resetPipeAnimation()">重置</button>
+                </div>
+            </div>
+            <div class="explanation">
+                观察水流通过不同粗细的管道：粗管道中水流速度慢、压强大（蓝色深）；细管道中水流速度快、压强小（红色）。
+            </div>
+        </div>
+
+        <div class="section">
+            <h2>动画演示2：机翼升力</h2>
+            <div class="demo-container">
+                <canvas id="wingCanvas" width="800" height="400"></canvas>
+                <div class="controls">
+                    <button onclick="toggleWingAnimation()">开始/暂停动画</button>
+                    <div class="slider-container">
+                        <label>攻角调节：<span id="angleValue">5</span>°</label>
+                        <input type="range" id="angleSlider" min="0" max="15" value="5" step="1" oninput="updateAngle(this.value)">
+                    </div>
+                </div>
+            </div>
+            <div class="explanation">
+                机翼上表面弯曲，下表面平直。空气流过上表面的路程更长，速度更快，压强更小；下表面速度慢，压强大，产生向上的升力。
+            </div>
+        </div>
+
+        <div class="section">
+            <h2>伯努利方程详解</h2>
+            <div class="equation-box">
+                <div class="equation">
+                    P + ½ρv² + ρgh = 常数
+                </div>
+                <div class="variable-list">
+                    <li><strong>P</strong> = 静压强（帕斯卡 Pa）</li>
+                    <li><strong>ρ</strong> = 流体密度（kg/m³）</li>
+                    <li><strong>v</strong> = 流体速度（m/s）</li>
+                    <li><strong>g</strong> = 重力加速度（9.8 m/s²）</li>
+                    <li><strong>h</strong> = 高度（m）</li>
+                </div>
+            </div>
+            <div class="explanation">
+                <p><strong>方程含义：</strong>在理想流体的稳定流动中，压力能、动能和势能的总和保持不变。</p>
+                <p style="margin-top: 10px;"><strong>三个部分：</strong></p>
+                <p>• <strong>P</strong>：静压能 - 流体的压力</p>
+                <p>• <strong>½ρv²</strong>：动压能 - 流体运动的动能</p>
+                <p>• <strong>ρgh</strong>：位压能 - 流体的重力势能</p>
+            </div>
+        </div>
+
+        <div class="section">
+            <h2>互动实验：伯努利方程计算器</h2>
+            <div class="interactive-demo">
+                <div class="demo-item">
+                    <h3>位置1（入口）</h3>
+                    <div class="slider-container">
+                        <label>速度 v₁: <span id="v1Value">2</span> m/s</label>
+                        <input type="range" id="v1Slider" min="1" max="10" value="2" step="0.5" oninput="calculateBernoulli()">
+                    </div>
+                    <div class="slider-container">
+                        <label>高度 h₁: <span id="h1Value">5</span> m</label>
+                        <input type="range" id="h1Slider" min="0" max="10" value="5" step="0.5" oninput="calculateBernoulli()">
+                    </div>
+                    <div class="value-display">
+                        压强 P₁: <span id="p1Result">100000</span> Pa
+                    </div>
+                </div>
+                <div class="demo-item">
+                    <h3>位置2（出口）</h3>
+                    <div class="slider-container">
+                        <label>速度 v₂: <span id="v2Value">8</span> m/s</label>
+                        <input type="range" id="v2Slider" min="1" max="20" value="8" step="0.5" oninput="calculateBernoulli()">
+                    </div>
+                    <div class="slider-container">
+                        <label>高度 h₂: <span id="h2Value">2</span> m</label>
+                        <input type="range" id="h2Slider" min="0" max="10" value="2" step="0.5" oninput="calculateBernoulli()">
+                    </div>
+                    <div class="value-display">
+                        压强 P₂: <span id="p2Result">计算中...</span> Pa
+                    </div>
+                </div>
+            </div>
+            <div class="explanation">
+                调节滑块改变参数，观察压强如何变化。注意：速度增加时，压强减小！
+            </div>
+        </div>
+
+        <div class="section">
+            <h2>生活中的伯努利现象</h2>
+            <div class="phenomenon-card">
+                <div class="phenomenon-title">✈️ 飞机起飞</div>
+                <p>机翼的特殊形状使上方空气流速快、压强小，下方流速慢、压强大，产生升力。</p>
+            </div>
+            <div class="phenomenon-card">
+                <div class="phenomenon-title">🚄 站台安全线</div>
+                <p>高速列车经过时，靠近列车的空气流速快、压强小，可能将人"吸"向列车，所以要站在安全线外。</p>
+            </div>
+            <div class="phenomenon-card">
+                <div class="phenomenon-title">⚽ 香蕉球</div>
+                <p>足球旋转时，一侧空气流速快、压强小，另一侧流速慢、压强大，使球弯曲飞行。</p>
+            </div>
+            <div class="phenomenon-card">
+                <div class="phenomenon-title">💨 吹纸实验</div>
+                <p>向两张平行的纸中间吹气，纸张会相互靠近而不是分开，因为中间空气流速快、压强小。</p>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // 管道动画
+        let pipeCanvas = document.getElementById('pipeCanvas');
+        let pipeCtx = pipeCanvas.getContext('2d');
+        let pipeAnimating = false;
+        let pipeParticles = [];
+        let pipeTime = 0;
+
+        // 初始化粒子
+        function initPipeParticles() {
+            pipeParticles = [];
+            for(let i = 0; i < 50; i++) {
+                pipeParticles.push({
+                    x: Math.random() * 800,
+                    y: 150 + (Math.random() - 0.5) * 80,
+                    vx: 2
+                });
+            }
+        }
+
+        // 绘制管道
+        function drawPipe() {
+            pipeCtx.clearRect(0, 0, 800, 300);
+            
+            // 绘制管道轮廓
+            pipeCtx.strokeStyle = '#4a5568';
+            pipeCtx.lineWidth = 3;
+            pipeCtx.beginPath();
+            // 上边缘
+            pipeCtx.moveTo(0, 50);
+            pipeCtx.lineTo(200, 50);
+            pipeCtx.lineTo(300, 100);
+            pipeCtx.lineTo(500, 100);
+            pipeCtx.lineTo(600, 50);
+            pipeCtx.lineTo(800, 50);
+            // 下边缘
+            pipeCtx.moveTo(0, 250);
+            pipeCtx.lineTo(200, 250);
+            pipeCtx.lineTo(300, 200);
+            pipeCtx.lineTo(500, 200);
+            pipeCtx.lineTo(600, 250);
+            pipeCtx.lineTo(800, 250);
+            pipeCtx.stroke();
+            
+            // 绘制压强颜色
+            let gradient1 = pipeCtx.createLinearGradient(0, 150, 200, 150);
+            gradient1.addColorStop(0, 'rgba(59, 130, 246, 0.3)');
+            gradient1.addColorStop(1, 'rgba(59, 130, 246, 0.3)');
+            pipeCtx.fillStyle = gradient1;
+            pipeCtx.fillRect(0, 50, 200, 200);
+            
+            let gradient2 = pipeCtx.createLinearGradient(300, 150, 500, 150);
+            gradient2.addColorStop(0, 'rgba(239, 68, 68, 0.3)');
+            gradient2.addColorStop(1, 'rgba(239, 68, 68, 0.3)');
+            pipeCtx.fillStyle = gradient2;
+            pipeCtx.fillRect(300, 100, 200, 100);
+            
+            let gradient3 = pipeCtx.createLinearGradient(600, 150, 800, 150);
+            gradient3.addColorStop(0, 'rgba(59, 130, 246, 0.3)');
+            gradient3.addColorStop(1, 'rgba(59, 130, 246, 0.3)');
+            pipeCtx.fillStyle = gradient3;
+            pipeCtx.fillRect(600, 50, 200, 200);
+            
+            // 绘制粒子
+            pipeCtx.fillStyle = '#5a67d8';
+            pipeParticles.forEach(p => {
+                // 根据位置调整速度
+                if(p.x > 200 && p.x < 300) {
+                    p.vx = 4; // 过渡区
+                } else if(p.x >= 300 && p.x <= 500) {
+                    p.vx = 8; // 细管道，速度快
+                } else if(p.x > 500 && p.x < 600) {
+                    p.vx = 4; // 过渡区
+                } else {
+                    p.vx = 2; // 粗管道，速度慢
+                }
+                
+                // 调整y位置
+                if(p.x >= 300 && p.x <= 500) {
+                    p.y = 150 + (Math.random() - 0.5) * 40;
+                } else {
+                    p.y = 150 + (Math.random() - 0.5) * 80;
+                }
+                
+                p.x += p.vx;
+                if(p.x > 800) p.x = 0;
+                
+                pipeCtx.beginPath();
+                pipeCtx.arc(p.x, p.y, 3, 0, Math.PI * 2);
+                pipeCtx.fill();
+            });
+            
+            // 添加标签
+            pipeCtx.font = '16px Microsoft YaHei';
+            pipeCtx.fillStyle = '#2d3748';
+            pipeCtx.fillText('速度慢，压强大', 60, 30);
+            pipeCtx.fillText('速度快，压强小', 350, 80);
+            pipeCtx.fillText('速度慢，压强大', 640, 30);
+        }
+
+        function animatePipe() {
+            if(pipeAnimating) {
+                drawPipe();
+                requestAnimationFrame(animatePipe);
+            }
+        }
+
+        function togglePipeAnimation() {
+            pipeAnimating = !pipeAnimating;
+            if(pipeAnimating) animatePipe();
+        }
+
+        function resetPipeAnimation() {
+            pipeAnimating = false;
+            initPipeParticles();
+            drawPipe();
+        }
+
+        // 机翼动画
+        let wingCanvas = document.getElementById('wingCanvas');
+        let wingCtx = wingCanvas.getContext('2d');
+        let wingAnimating = false;
+        let wingParticles = [];
+        let attackAngle = 5;
+
+        function initWingParticles() {
+            wingParticles = [];
+            for(let i = 0; i < 60; i++) {
+                wingParticles.push({
+                    x: Math.random() * 800,
+                    y: Math.random() * 400,
+                    vx: 3
+                });
+            }
+        }
+
+        function drawWing() {
+            wingCtx.clearRect(0, 0, 800, 400);
+            
+            // 绘制机翼
+            wingCtx.save();
+            wingCtx.translate(400, 200);
+            wingCtx.rotate(attackAngle * Math.PI / 180);
+            
+            wingCtx.fillStyle = '#4a5568';
+            wingCtx.beginPath();
+            wingCtx.moveTo(-150, 0);
+            // 上表面（弯曲）
+            wingCtx.quadraticCurveTo(-75, -40, 0, -30);
+            wingCtx.quadraticCurveTo(75, -20, 150, -5);
+            // 下表面（较平）
+            wingCtx.lineTo(150, 5);
+            wingCtx.quadraticCurveTo(75, 10, 0, 10);
+            wingCtx.quadraticCurveTo(-75, 10, -150, 0);
+            wingCtx.fill();
+            
+            wingCtx.restore();
+            
+            // 绘制流线和粒子
+            wingCtx.strokeStyle = 'rgba(90, 103, 216, 0.3)';
+            wingCtx.lineWidth = 1;
+            
+            wingParticles.forEach(p => {
+                p.x += p.vx;
+                if(p.x > 800) {
+                    p.x = 0;
+                    p.y = Math.random() * 400;
+                }
+                
+                // 计算机翼影响
+                let dx = p.x - 400;
+                let dy = p.y - 200;
+                let dist = Math.sqrt(dx * dx + dy * dy);
+                
+                if(dist < 200 && Math.abs(dx) < 150) {
+                    if(dy < 0) {
+                        // 上表面，速度更快
+                        p.vx = 6;
+                        wingCtx.fillStyle = 'rgba(239, 68, 68, 0.8)';
+                    } else {
+                        // 下表面，速度较慢
+                        p.vx = 3;
+                        wingCtx.fillStyle = 'rgba(59, 130, 246, 0.8)';
+                    }
+                } else {
+                    p.vx = 3;
+                    wingCtx.fillStyle = 'rgba(90, 103, 216, 0.5)';
+                }
+                
+                wingCtx.beginPath();
+                wingCtx.arc(p.x, p.y, 2, 0, Math.PI * 2);
+                wingCtx.fill();
+            });
+            
+            // 绘制升力箭头
+            wingCtx.strokeStyle = '#10b981';
+            wingCtx.lineWidth = 3;
+            wingCtx.beginPath();
+            wingCtx.moveTo(400, 250);
+            wingCtx.lineTo(400, 150);
+            wingCtx.stroke();
+            
+            // 箭头头部
+            wingCtx.beginPath();
+            wingCtx.moveTo(390, 160);
+            wingCtx.lineTo(400, 150);
+            wingCtx.lineTo(410, 160);
+            wingCtx.stroke();
+            
+            // 添加标签
+            wingCtx.font = '16px Microsoft YaHei';
+            wingCtx.fillStyle = '#2d3748';
+            wingCtx.fillText('上表面：流速快，压强小', 50, 50);
+            wingCtx.fillText('下表面：流速慢，压强大', 50, 350);
+            wingCtx.fillStyle = '#10b981';
+            wingCtx.fillText('升力', 420, 180);
+        }
+
+        function animateWing() {
+            if(wingAnimating) {
+                drawWing();
+                requestAnimationFrame(animateWing);
+            }
+        }
+
+        function toggleWingAnimation() {
+            wingAnimating = !wingAnimating;
+            if(wingAnimating) animateWing();
+        }
+
+        function updateAngle(value) {
+            attackAngle = parseInt(value);
+            document.getElementById('angleValue').textContent = value;
+            drawWing();
+        }
+
+        // 伯努利方程计算器
+        function calculateBernoulli() {
+            // 获取输入值
+            let v1 = parseFloat(document.getElementById('v1Slider').value);
+            let h1 = parseFloat(document.getElementById('h1Slider').value);
+            let v2 = parseFloat(document.getElementById('v2Slider').value);
+            let h2 = parseFloat(document.getElementById('h2Slider').value);
+            
+            // 更新显示值
+            document.getElementById('v1Value').textContent = v1;
+            document.getElementById('h1Value').textContent = h1;
+            document.getElementById('v2Value').textContent = v2;
+            document.getElementById('h2Value').textContent = h2;
+            
+            // 假设条件
+            const rho = 1000; // 水的密度 kg/m³
+            const g = 9.8; // 重力加速度 m/s²
+            const P1 = 100000; // 位置1的压强 Pa
+            
+            // 根据伯努利方程计算P2
+            // P1 + 0.5*rho*v1^2 + rho*g*h1 = P2 + 0.5*rho*v2^2 + rho*g*h2
+            let P2 = P1 + 0.5 * rho * (v1 * v1 - v2 * v2) + rho * g * (h1 - h2);
+            
+            // 更新结果显示
+            document.getElementById('p1Result').textContent = P1.toFixed(0);
+            document.getElementById('p2Result').textContent = P2.toFixed(0);
+        }
+
+        // 初始化
+        window.onload = function() {
+            initPipeParticles();
+            drawPipe();
+            initWingParticles();
+            drawWing();
+            calculateBernoulli();
+        };
+    </script>
+</body>
+</html>

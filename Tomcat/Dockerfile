@@ -4,14 +4,6 @@ FROM ubuntu:25.10
 # Maintainer information
 LABEL maintainer="tobecrazy@qq.com"
 
-# Set environment variables
-ENV JAVA_HOME=/usr/lib/jvm/java-21-openjdk-amd64
-ENV CATALINA_HOME=/opt/tomcat
-ENV CATALINA_BASE=/opt/tomcat
-ENV CATALINA_TMPDIR=/opt/tomcat/temp
-ENV JRE_HOME=$JAVA_HOME
-ENV PATH=$PATH:$JAVA_HOME/bin:$CATALINA_HOME/bin
-
 # Update package list and install required packages
 RUN apt-get update && \
     apt-get install -y \
@@ -21,8 +13,25 @@ RUN apt-get update && \
     tar \
     && rm -rf /var/lib/apt/lists/*
 
-# Verify Java installation
-RUN java -version
+# Verify Java installation and set correct paths
+RUN java -version && \
+    update-alternatives --list java && \
+    JAVA_HOME_PATH=$(update-alternatives --query java | grep 'Value:' | grep -o '/.*jdk[^/]*') && \
+    echo "Detected JAVA_HOME: $JAVA_HOME_PATH"
+
+# Set environment variables with dynamically detected paths
+ENV JAVA_HOME=/usr/lib/jvm/java-21-openjdk-amd64
+ENV JRE_HOME=/usr/lib/jvm/java-21-openjdk-amd64
+ENV CATALINA_HOME=/opt/tomcat
+ENV CATALINA_BASE=/opt/tomcat
+ENV CATALINA_TMPDIR=/opt/tomcat/temp
+ENV PATH=$PATH:$JAVA_HOME/bin:$CATALINA_HOME/bin
+
+# Verify the Java paths exist
+RUN ls -la /usr/lib/jvm/ && \
+    ls -la $JAVA_HOME && \
+    echo "JAVA_HOME=$JAVA_HOME" && \
+    echo "JRE_HOME=$JRE_HOME"
 
 # Create tomcat user and group
 RUN groupadd -r tomcat && \
@@ -43,16 +52,7 @@ RUN chown -R tomcat:tomcat /opt/tomcat && \
 RUN mkdir -p /opt/tomcat/temp && \
     chown -R tomcat:tomcat /opt/tomcat/temp
 
-# Configure Tomcat users (optional - for management interface)
-RUN echo '<?xml version="1.0" encoding="UTF-8"?>' > /opt/tomcat/conf/tomcat-users.xml && \
-    echo '<tomcat-users xmlns="http://tomcat.apache.org/xml"' >> /opt/tomcat/conf/tomcat-users.xml && \
-    echo '              xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"' >> /opt/tomcat/conf/tomcat-users.xml && \
-    echo '              xsi:schemaLocation="http://tomcat.apache.org/xml tomcat-users.xsd"' >> /opt/tomcat/conf/tomcat-users.xml && \
-    echo '              version="1.0">' >> /opt/tomcat/conf/tomcat-users.xml && \
-    echo '  <role rolename="manager-gui"/>' >> /opt/tomcat/conf/tomcat-users.xml && \
-    echo '  <role rolename="admin-gui"/>' >> /opt/tomcat/conf/tomcat-users.xml && \
-    echo '  <user username="admin" password="admin" roles="manager-gui,admin-gui"/>' >> /opt/tomcat/conf/tomcat-users.xml && \
-    echo '</tomcat-users>' >> /opt/tomcat/conf/tomcat-users.xml
+# Configuration files will be mounted from host via docker-compose volumes
 
 # Expose Tomcat port
 EXPOSE 8080

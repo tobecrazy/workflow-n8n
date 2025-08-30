@@ -13,25 +13,28 @@ RUN apt-get update && \
     tar \
     && rm -rf /var/lib/apt/lists/*
 
-# Verify Java installation and set correct paths
-RUN java -version && \
-    update-alternatives --list java && \
-    JAVA_HOME_PATH=$(update-alternatives --query java | grep 'Value:' | grep -o '/.*jdk[^/]*') && \
-    echo "Detected JAVA_HOME: $JAVA_HOME_PATH"
+# Find the actual Java installation path and create a script to set environment variables
+RUN JAVA_HOME_PATH=$(find /usr/lib/jvm -name "java-21-openjdk-*" -type d | head -1) && \
+    echo "Found Java at: $JAVA_HOME_PATH" && \
+    ls -la $JAVA_HOME_PATH && \
+    echo "#!/bin/bash" > /usr/local/bin/set-java-env.sh && \
+    echo "export JAVA_HOME=$JAVA_HOME_PATH" >> /usr/local/bin/set-java-env.sh && \
+    echo "export JRE_HOME=$JAVA_HOME_PATH" >> /usr/local/bin/set-java-env.sh && \
+    echo "export PATH=\$PATH:\$JAVA_HOME/bin" >> /usr/local/bin/set-java-env.sh && \
+    chmod +x /usr/local/bin/set-java-env.sh && \
+    cat /usr/local/bin/set-java-env.sh
 
-# Set environment variables with dynamically detected paths
-ENV JAVA_HOME=/usr/lib/jvm/java-21-openjdk-amd64
-ENV JRE_HOME=/usr/lib/jvm/java-21-openjdk-amd64
+# Set environment variables dynamically
+RUN JAVA_HOME_PATH=$(find /usr/lib/jvm -name "java-21-openjdk-*" -type d | head -1) && \
+    echo "JAVA_HOME=$JAVA_HOME_PATH" && \
+    echo "JRE_HOME=$JAVA_HOME_PATH"
+
 ENV CATALINA_HOME=/opt/tomcat
 ENV CATALINA_BASE=/opt/tomcat
 ENV CATALINA_TMPDIR=/opt/tomcat/temp
-ENV PATH=$PATH:$JAVA_HOME/bin:$CATALINA_HOME/bin
 
-# Verify the Java paths exist
-RUN ls -la /usr/lib/jvm/ && \
-    ls -la $JAVA_HOME && \
-    echo "JAVA_HOME=$JAVA_HOME" && \
-    echo "JRE_HOME=$JRE_HOME"
+# Verify Java installation
+RUN java -version && ls -la /usr/lib/jvm/
 
 # Create tomcat user and group
 RUN groupadd -r tomcat && \
@@ -67,5 +70,5 @@ WORKDIR /opt/tomcat
 HEALTHCHECK --interval=30s --timeout=10s --start-period=5s --retries=3 \
     CMD curl -f http://localhost:8080/ || exit 1
 
-# Start Tomcat
-CMD ["/opt/tomcat/bin/catalina.sh", "run"]
+# Start Tomcat with proper environment variables
+CMD ["/bin/bash", "-c", "source /usr/local/bin/set-java-env.sh && /opt/tomcat/bin/catalina.sh run"]

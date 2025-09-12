@@ -11,6 +11,10 @@ services:
 
       # Enable community nodes as tools
       - N8N_COMMUNITY_PACKAGES_ALLOW_TOOL_USAGE=true
+      
+      # Address deprecation warnings
+      - DB_SQLITE_POOL_SIZE=10
+      - N8N_RUNNERS_ENABLED=true
     ports:
       - "5678:5678"
     volumes:

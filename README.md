@@ -22,10 +22,19 @@ docker-compose up -d
 ```
 
 ### Configuration
-Environment variables can be set in `.env` file:
+Environment variables can be set in the `docker-compose.yml` or `.env` file:
 ```
+# Enable/disable runners (set to true to use)
+N8N_RUNNERS_ENABLED=true
+
+# SQLite connection pool size
+DB_SQLITE_POOL_SIZE=10
+
+# Basic Auth
 N8N_BASIC_AUTH_USER=admin
 N8N_BASIC_AUTH_PASSWORD=password
+
+# PostgreSQL (optional)
 DB_TYPE=postgresdb
 DB_POSTGRESDB_DATABASE=n8n_Database
 DB_POSTGRESDB_HOST=db
@@ -33,6 +42,8 @@ DB_POSTGRESDB_PORT=5432
 DB_POSTGRESDB_USER=n8n_user
 DB_POSTGRESDB_SCHEMA=public
 DB_POSTGRESDB_PASSWORD=dbn8n@2025
+
+# Allow community packages to use tools
 N8N_COMMUNITY_PACKAGES_ALLOW_TOOL_USAGE=true
 ```
 
@@ -40,11 +51,13 @@ N8N_COMMUNITY_PACKAGES_ALLOW_TOOL_USAGE=true
 ![Workflow Example](n8n_mcp_demo.gif)
 
 ### Playwright Browser Automation
-This n8n setup includes Playwright browser automation capabilities with system Chromium. The setup includes:
-- System Chromium browser for better performance
-- Playwright configuration script that handles browser detection
-- Support for n8n Playwright nodes
-- Environment variables properly configured for Playwright
+This n8n setup includes Playwright for browser automation, with the following features:
+
+- **System Dependencies**: The Docker image includes all necessary system dependencies for Playwright and Chromium.
+- **Chromium Browser**: Uses the system's own Chromium browser for better performance and compatibility.
+- **Setup Script**: A `playwright-setup.sh` script runs on container startup to configure the environment, ensuring Playwright can locate and use the system's Chromium instance.
+- **Environment Variables**: The `PLAYWRIGHT_BROWSERS_PATH` is set to `0` to prevent Playwright from downloading its own browser binaries, and other variables are configured for seamless integration.
+- **n8n Node Support**: Fully supports n8n's Playwright nodes for building browser-based automation workflows.
 
 ### Tomcat Server
 This project also includes a complete Tomcat server setup with:
@@ -98,10 +111,19 @@ docker-compose up -d
 ```
 
 ### 配置
-环境变量可在`.env`文件中设置：
+环境变量可在`docker-compose.yml`或`.env`文件中设置：
 ```
+# 启用/禁用执行器 (设置为 true 以使用)
+N8N_RUNNERS_ENABLED=true
+
+# SQLite 连接池大小
+DB_SQLITE_POOL_SIZE=10
+
+# 基本认证
 N8N_BASIC_AUTH_USER=admin
 N8N_BASIC_AUTH_PASSWORD=password
+
+# PostgreSQL (可选)
 DB_TYPE=postgresdb
 DB_POSTGRESDB_DATABASE=n8n_Database
 DB_POSTGRESDB_HOST=db
@@ -109,6 +131,8 @@ DB_POSTGRESDB_PORT=5432
 DB_POSTGRESDB_USER=n8n_user
 DB_POSTGRESDB_SCHEMA=public
 DB_POSTGRESDB_PASSWORD=dbn8n@2025
+
+# 允许社区包使用工具
 N8N_COMMUNITY_PACKAGES_ALLOW_TOOL_USAGE=true
 ```
 
@@ -116,11 +140,13 @@ N8N_COMMUNITY_PACKAGES_ALLOW_TOOL_USAGE=true
 ![工作流示例](n8n_mcp_demo.gif)
 
 ### Playwright浏览器自动化
-此n8n设置包含Playwright浏览器自动化功能，包括：
-- 系统Chromium浏览器以获得更好的性能
-- 处理浏览器检测的Playwright配置脚本
-- 支持n8n Playwright节点
-- 为Playwright正确配置的环境变量
+此n8n设置包含Playwright用于浏览器自动化，具有以下功能：
+
+- **系统依赖**: Docker镜像包含Playwright和Chromium所需的所有系统依赖。
+- **Chromium浏览器**: 使用系统自带的Chromium浏览器以获得更好的性能和兼容性。
+- **设置脚本**: 容器启动时会运行`playwright-setup.sh`脚本来配置环境，确保Playwright可以找到并使用系统的Chromium实例。
+- **环境变量**: `PLAYWRIGHT_BROWSERS_PATH`设置为`0`以防止Playwright下载自己的浏览器二进制文件，并配置了其他变量以实现无缝集成。
+- **n8n节点支持**: 完全支持n8n的Playwright节点，用于构建基于浏览器的自动化工作流。
 
 ### Tomcat服务器
 本项目还包括一个完整的Tomcat服务器设置，包括：

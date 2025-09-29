@@ -40,12 +40,12 @@ RUN java -version && ls -la /usr/lib/jvm/
 RUN groupadd -r tomcat && \
     useradd -r -g tomcat -d /opt/tomcat -s /bin/false tomcat
 
-# Download and install Tomcat (version 9.0.108)
+# Download and install Tomcat (version 9.0.109)
 RUN cd /tmp && \
-    wget https://downloads.apache.org/tomcat/tomcat-9/v9.0.108/bin/apache-tomcat-9.0.108.tar.gz && \
-    tar -xzf apache-tomcat-9.0.108.tar.gz && \
-    mv apache-tomcat-9.0.108 /opt/tomcat && \
-    rm apache-tomcat-9.0.108.tar.gz
+    wget https://downloads.apache.org/tomcat/tomcat-9/v9.0.109/bin/apache-tomcat-9.0.109.tar.gz && \
+    tar -xzf apache-tomcat-9.0.109.tar.gz && \
+    mv apache-tomcat-9.0.109 /opt/tomcat && \
+    rm apache-tomcat-9.0.109.tar.gz
 
 # Set proper permissions
 RUN chown -R tomcat:tomcat /opt/tomcat && \

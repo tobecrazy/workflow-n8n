@@ -6,7 +6,7 @@
 
 ## Overview
 
-This project provides a customized n8n workflow automation platform with additional Python integration capabilities and Playwright browser automation support. n8n is an extendable workflow automation tool that enables you to connect any app with an API.
+This project provides a comprehensive workflow automation platform built on n8n with extensive enhancements including Python integration, Playwright browser automation, WeChat bot integration, and multiple deployment options. The platform extends the standard n8n functionality with additional infrastructure components including Jenkins CI/CD, Tomcat web server, multiple database options (SQLite, PostgreSQL, MySQL), and Model Context Protocol (MCP) server support for AI-powered workflows.
 
 ## Features
 
@@ -17,6 +17,9 @@ This project provides a customized n8n workflow automation platform with additio
 - 🔒 Secure credential handling
 - 🐳 Tomcat server for web applications
 - 🛠️ Built-in support for Model Context Protocol (MCP) servers
+- 💬 WeChat bot integration with ChatGPT
+- 🔧 Jenkins CI/CD integration
+- 🗄️ Multiple database options (SQLite, PostgreSQL, MySQL)
 
 ## Quick Start
 
@@ -114,7 +117,9 @@ This n8n setup includes Playwright for browser automation, with the following fe
 - **Continuous Monitoring**: The setup includes a background process that monitors for n8n-nodes-playwright installations and creates the necessary directory structures and symlinks for Playwright to work correctly with different versions.
 - **Browser Symlinks**: Creates multiple symlinks and directory structures that the Playwright node expects to find for different browser versions.
 
-## Tomcat Server
+## Additional Services
+
+### Tomcat Server
 
 This project also includes a complete Tomcat server setup with:
 - OpenJDK 21 on Ubuntu 25.10
@@ -125,6 +130,31 @@ This project also includes a complete Tomcat server setup with:
 - Non-root user security
 
 See [Tomcat/README.md](Tomcat/README.md) for detailed Tomcat setup and management instructions.
+
+### WeChat Bot Integration
+
+The project includes WeChat bot integration through the `WeChatRobot` directory, which provides:
+- ChatGPT-powered WeChat bot using `zhayujie/chatgpt-on-wechat` image
+- Configurable AI model integration
+- Support for single chat and group chat
+- Image creation capabilities
+- Conversation memory management
+- Multilingual support
+
+To use the WeChat bot:
+```bash
+cd WeChatRobot
+# Configure your API keys in docker-compose.yml
+docker-compose up -d
+```
+
+### Jenkins CI/CD
+
+The project includes Jenkins integration for continuous integration and deployment workflows, located in the `Jenkins/` directory.
+
+### MySQL Database
+
+Alternative database option through MySQL integration, available in the `Mysql/` directory for workflows requiring MySQL instead of PostgreSQL or SQLite.
 
 ## MCP Server Configuration
 
@@ -144,6 +174,15 @@ To get these API keys:
 - **Weather API Key**: Various providers available (e.g., OpenWeatherMap, WeatherAPI)
 
 MCP (Model Context Protocol) enables n8n workflows to access external tools and services through standardized interfaces, expanding the range of automation possibilities.
+
+## Access Points
+
+Once the services are running, you can access them at:
+
+- **N8N Interface**: http://localhost:5678
+- **Tomcat Server**: http://localhost:8080 (when Tomcat service is configured)
+- **Jenkins CI/CD**: http://localhost:8081 (when Jenkins service is configured)
+- **WeChat Bot**: Configured through the WeChat application after setup
 
 ## Troubleshooting
 

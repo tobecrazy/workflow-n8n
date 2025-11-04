@@ -6,20 +6,22 @@
 
 ## Overview
 
-This project provides a comprehensive workflow automation platform built on n8n with extensive enhancements including Python integration, Playwright browser automation, WeChat bot integration, and multiple deployment options. The platform extends the standard n8n functionality with additional infrastructure components including Jenkins CI/CD, Tomcat web server, multiple database options (SQLite, PostgreSQL, MySQL), and Model Context Protocol (MCP) server support for AI-powered workflows.
+This project provides a comprehensive workflow automation platform built on n8n with extensive enhancements including Python integration, Playwright browser automation, WeChat bot integration, and multiple deployment options. The platform extends the standard n8n functionality with additional infrastructure components including Jenkins CI/CD, Tomcat web server with demo applications, multiple database options (SQLite, PostgreSQL, MySQL), and Model Context Protocol (MCP) server support for AI-powered workflows.
 
 ## Features
 
-- 🚀 Pre-configured Docker setup
-- 🐍 Python integration for custom nodes (with uv package manager)
-- 🌐 Playwright browser automation support
-- 🔄 Easy workflow management
-- 🔒 Secure credential handling
-- 🐳 Tomcat server for web applications
+- 🚀 Pre-configured Docker setup with custom n8n image
+- 🐍 Python 3 integration for custom nodes (with uv package manager)
+- 🌐 Playwright browser automation with system Chromium
+- 🔄 Easy workflow management with multiple deployment scripts
+- 🔒 Secure credential handling and environment configuration
+- 🐳 Tomcat 9.0.108 server with OpenJDK 21 and demo web applications
 - 🛠️ Built-in support for Model Context Protocol (MCP) servers
-- 💬 WeChat bot integration with ChatGPT
-- 🔧 Jenkins CI/CD integration
-- 🗄️ Multiple database options (SQLite, PostgreSQL, MySQL)
+- 💬 WeChat bot integration with ChatGPT using zhayujie/chatgpt-on-wechat
+- 🔧 Jenkins CI/CD integration with customizable build environment
+- 🗄️ Multiple database options (SQLite default, PostgreSQL, MySQL)
+- 📦 Advanced package management with uv for faster Python installations
+- 🎭 Continuous Playwright monitoring and automatic symlink creation
 
 ## Quick Start
 
@@ -91,14 +93,18 @@ N8N_COMMUNITY_PACKAGES_ALLOW_TOOL_USAGE=true
 ## Python and Package Management
 
 This setup includes the latest uv package manager for faster Python package installations. The container includes:
-- Python 3 with pip
-- uv (fast Python package installer and resolver)
-- Essential build tools for Python extensions
+- Python 3 with pip (upgraded to latest version with PEP 668 compatibility)
+- uv and uvx (fast Python package installer and resolver, installed via official method)
+- Essential build tools for Python extensions (gcc, musl-dev, libffi-dev)
+- System command aliases (python3→python, pip3→pip) for convenience
+
 ```
 # Example of installing Python packages in the container
 pip install package-name
-# or using uv (faster)
+# or using uv (faster, recommended)
 uv pip install package-name
+# or using uvx for running tools directly
+uvx tool-name
 ```
 
 ## Screenshot
@@ -107,54 +113,99 @@ uv pip install package-name
 
 ## Playwright Browser Automation
 
-This n8n setup includes Playwright for browser automation, with the following features:
+This n8n setup includes comprehensive Playwright browser automation with advanced features:
 
-- **System Dependencies**: The Docker image includes all necessary system dependencies for Playwright and Chromium, including nss, freetype, harfbuzz, ttf-freefont, gcompat, bash, dbus, fontconfig, mesa-gl, udev, and xvfb.
-- **Chromium Browser**: Uses the system's own Chromium browser for better performance and compatibility. Includes chromium-chromedriver.
-- **Setup Script**: A `playwright-setup.sh` script runs on container startup to configure the environment, ensuring Playwright can locate and use the system's Chromium instance.
-- **Environment Variables**: Properly configured environment variables including `PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD=1`, `PLAYWRIGHT_CHROMIUM_EXECUTABLE_PATH=/usr/bin/chromium-browser`, and others to prevent Playwright from downloading its own browser binaries and ensure seamless integration.
-- **n8n Node Support**: Fully supports n8n's Playwright nodes for building browser-based automation workflows.
-- **Continuous Monitoring**: The setup includes a background process that monitors for n8n-nodes-playwright installations and creates the necessary directory structures and symlinks for Playwright to work correctly with different versions.
-- **Browser Symlinks**: Creates multiple symlinks and directory structures that the Playwright node expects to find for different browser versions.
+- **System Dependencies**: Pre-installed all necessary system dependencies including nss, freetype, harfbuzz, ttf-freefont, gcompat, bash, dbus, fontconfig, mesa-gl, udev, and xvfb.
+- **Chromium Browser**: Uses Alpine Linux system Chromium with chromium-chromedriver for optimal performance and compatibility.
+- **Advanced Setup Script**: `playwright-setup.sh` runs on container startup with comprehensive environment configuration and browser detection.
+- **Environment Variables**: Complete Playwright environment setup including `PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD=1`, `PLAYWRIGHT_CHROMIUM_EXECUTABLE_PATH=/usr/bin/chromium-browser`, and Puppeteer compatibility variables.
+- **n8n Node Support**: Full support for n8n's Playwright nodes with automatic browser detection and configuration.
+- **Continuous Monitoring**: Background process monitors for n8n-nodes-playwright installations and creates necessary directory structures and symlinks dynamically.
+- **Multi-Version Support**: Creates browser symlinks for multiple Playwright versions (1129-1135) to ensure compatibility.
+- **Smart Browser Detection**: Implements fake npx command to skip unnecessary browser downloads and uses system Chromium directly.
+- **Chrome Wrapper Scripts**: Creates wrapper scripts with proper sandbox settings for headless operation.
 
 ## Additional Services
 
-### Tomcat Server
+### Tomcat Server with Demo Applications
 
-This project also includes a complete Tomcat server setup with:
-- OpenJDK 21 on Ubuntu 25.10
-- Tomcat 9.0.108
-- Docker container management script
-- Volume mapping for webapps, logs, and configuration
-- Health check monitoring
-- Non-root user security
+This project includes a complete Tomcat server setup with demo web applications:
+- **Base**: OpenJDK 21 on Ubuntu 25.10 with Tomcat 9.0.108
+- **Management Scripts**: Comprehensive `runTomcat.sh` script with start/stop/logs/clean commands
+- **Volume Mapping**: Persistent storage for webapps, logs, and configuration
+- **Health Monitoring**: Built-in health checks and non-root user security
+- **Demo Applications**: Pre-loaded with interactive HTML demos including:
+  - Bernoulli principle animations (Claude and GPT-5 versions)
+  - AI model comparison pages (DeepSeek, Kimi-dev, Qwen3-coder)
+  - Interactive scientific visualizations
 
-See [Tomcat/README.md](Tomcat/README.md) for detailed Tomcat setup and management instructions.
+**Access Points**:
+- Main Application: http://localhost:8090
+- Manager App: http://localhost:8090/manager (admin/admin)
+- Host Manager: http://localhost:8090/host-manager
+
+See [Tomcat/README.md](Tomcat/README.md) for detailed setup and management instructions.
 
 ### WeChat Bot Integration
 
-The project includes WeChat bot integration through the `WeChatRobot` directory, which provides:
-- ChatGPT-powered WeChat bot using `zhayujie/chatgpt-on-wechat` image
-- Configurable AI model integration
-- Support for single chat and group chat
-- Image creation capabilities
-- Conversation memory management
-- Multilingual support
+The project includes WeChat bot integration through the `WeChatRobot` directory, featuring:
+- **ChatGPT Integration**: Uses `zhayujie/chatgpt-on-wechat` image for WeChat automation
+- **Flexible Configuration**: Support for various AI models and custom API endpoints
+- **Chat Modes**: Single chat prefix (`["bot", "@bot"]`) and group chat support
+- **Creative Features**: Image creation with prefixes `["画", "看", "找"]` (draw, see, find)
+- **Memory Management**: Configurable conversation max tokens (1000 default)
+- **Multi-language**: Built-in multilingual support with customizable character description
+- **Plugin System**: Global plugin configuration support and LinkAI integration options
 
-To use the WeChat bot:
+**Quick Start**:
 ```bash
 cd WeChatRobot
-# Configure your API keys in docker-compose.yml
+# Edit docker-compose.yml to set your OPEN_AI_API_KEY and other settings
 docker-compose up -d
 ```
 
-### Jenkins CI/CD
+**Key Configuration**:
+- Set `OPEN_AI_API_KEY` to your OpenAI API key
+- Configure `MODEL` for specific AI model (empty for default)
+- Adjust `GROUP_NAME_WHITE_LIST` for allowed group chats
+- Customize `CHARACTER_DESC` for bot personality
 
-The project includes Jenkins integration for continuous integration and deployment workflows, located in the `Jenkins/` directory.
+### Jenkins CI/CD Integration
 
-### MySQL Database
+The project includes Jenkins integration for continuous integration and deployment workflows:
+- **Custom Build Environment**: Docker-based Jenkins with customizable build context
+- **Port Configuration**: Accessible on port 8090 with agent port 50000
+- **Persistent Storage**: Volume mapping for Jenkins data and job configurations
+- **Easy Setup**: Simple docker-compose configuration for quick deployment
 
-Alternative database option through MySQL integration, available in the `Mysql/` directory for workflows requiring MySQL instead of PostgreSQL or SQLite.
+**Quick Start**:
+```bash
+cd Jenkins
+docker-compose up -d
+# Access Jenkins at http://localhost:8090
+```
+
+### MySQL Database Integration
+
+Alternative database option through MySQL integration for workflows requiring MySQL:
+- **Latest MySQL**: Uses mysql:latest image with optimized configuration
+- **Security**: Configured with secure passwords and user permissions
+- **Port Mapping**: Accessible on port 3308 to avoid conflicts
+- **Persistent Storage**: Dedicated volume for MySQL data persistence
+- **Pre-configured Database**: Includes sample database and user setup
+
+**Configuration**:
+- Root Password: `9ol.6yhn3edc`
+- User: `study` with Password: `5tgb3edc1qaz`
+- Database: `mysql`
+- Port: `3308` (host) → `3306` (container)
+
+**Quick Start**:
+```bash
+cd Mysql
+docker-compose up -d
+# Connect to MySQL at localhost:3308
+```
 
 ## MCP Server Configuration
 
@@ -180,27 +231,48 @@ MCP (Model Context Protocol) enables n8n workflows to access external tools and 
 Once the services are running, you can access them at:
 
 - **N8N Interface**: http://localhost:5678
-- **Tomcat Server**: http://localhost:8080 (when Tomcat service is configured)
-- **Jenkins CI/CD**: http://localhost:8081 (when Jenkins service is configured)
+- **Tomcat Server**: http://localhost:8090 (when Tomcat service is running)
+  - Manager App: http://localhost:8090/manager (admin/admin)
+- **Jenkins CI/CD**: http://localhost:8090 (when Jenkins service is running)
+- **MySQL Database**: localhost:3308 (when MySQL service is running)
 - **WeChat Bot**: Configured through the WeChat application after setup
+
+**Note**: Tomcat and Jenkins both use port 8090 by default. Run only one service at a time or modify port configurations to avoid conflicts.
 
 ## Troubleshooting
 
 ### Docker Build Issues
-If you encounter dependency conflicts during the Docker image build, especially related to `openssl-dev` on Alpine Linux, it's likely due to inconsistencies between Alpine's stable and `edge` repositories. The `Dockerfile` has been updated to address this by:
+If you encounter dependency conflicts during the Docker image build, especially related to `openssl-dev` on Alpine Linux, the `Dockerfile` includes comprehensive fixes:
 
-1.  Ensuring both `main` and `community` `edge` repositories are used.
-2.  Performing `apk update` and `apk upgrade` to update existing packages.
-3.  Explicitly installing `openssl` and `openssl-dev` early in the `apk add` command to prioritize their dependency resolution.
+1. **Repository Management**: Ensures both `main` and `community` repositories are properly configured
+2. **Package Updates**: Performs `apk update` and `apk upgrade` before installing dependencies
+3. **Dependency Priority**: Explicitly installs `openssl` and `openssl-dev` early to prioritize their resolution
+4. **PEP 668 Compatibility**: Upgrades pip with `--break-system-packages` flag for modern Python packaging
+5. **UV Installation**: Uses official uv installation method for reliable package management
 
-If you still face issues, ensure your Docker cache is cleared and try rebuilding with `docker-compose up --build --force-recreate`.
+**Solutions**:
+- Clear Docker cache: `docker system prune -a`
+- Force rebuild: `docker-compose up --build --force-recreate`
+- Check for conflicting packages in the build logs
 
 ### Playwright Issues
 If Playwright nodes don't work properly:
-1. Make sure the container has started completely (the setup script runs in the background)
-2. Check that the necessary symlinks have been created (should happen automatically)
-3. Verify that environment variables are set correctly
-4. The background monitor creates symlinks as needed, but you might need to restart the container if the Playwright node was installed after container start
+1. **Container Startup**: Ensure the container has fully started (setup script runs in background)
+2. **Symlink Creation**: Check that browser symlinks were created automatically (monitor runs every 10 seconds)
+3. **Environment Variables**: Verify all Playwright environment variables are correctly set
+4. **Node Installation**: If Playwright node was installed after container start, restart the container to trigger symlink creation
+5. **Browser Detection**: Check that `/usr/bin/chromium-browser` exists and is executable
+6. **Monitor Process**: The background monitor should create symlinks for versions 1129-1135 automatically
+
+**Debug Commands**:
+```bash
+# Check if Chromium is working
+docker exec <container> /usr/bin/chromium-browser --version
+# Check for symlinks
+docker exec <container> find /home/node/.n8n -name "chrome" -type l
+# View monitor logs
+docker logs <container> | grep -i playwright
+```
 
 ### Running Scripts
 We provide several scripts for different scenarios:

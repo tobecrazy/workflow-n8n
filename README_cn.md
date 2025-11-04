@@ -2,17 +2,26 @@
 
 ![n8n Logo](https://user-images.githubusercontent.com/10284570/173569848-c624317f-42b1-45a6-ab09-f0ea3c247648.png)
 
-### 概述
-本项目提供了一个定制化的n8n工作流自动化平台，具有额外的Python集成功能和Playwright浏览器自动化支持。n8n是一个可扩展的工作流自动化工具，可以连接任何具有API的应用程序。
+**English** | [中文](README_cn.md)
 
-### 功能特点
-- 🚀 预配置的Docker环境
-- 🐍 支持Python自定义节点（包含uv包管理器）
-- 🌐 Playwright浏览器自动化支持
-- 🔄 简便的工作流管理
-- 🔒 安全的凭证处理
-- 🐳 Tomcat服务器用于Web应用程序
+## 概述
+
+本项目提供了一个基于n8n的综合工作流自动化平台，具有广泛的增强功能，包括Python集成、Playwright浏览器自动化、微信机器人集成和多种部署选项。该平台扩展了标准n8n功能，增加了额外的基础设施组件，包括Jenkins CI/CD、带有演示应用程序的Tomcat Web服务器、多种数据库选项（SQLite、PostgreSQL、MySQL），以及支持AI驱动工作流的模型上下文协议（MCP）服务器。
+
+## 功能特点
+
+- 🚀 预配置的Docker设置，包含定制n8n镜像
+- 🐍 Python 3集成支持自定义节点（包含uv包管理器）
+- 🌐 Playwright浏览器自动化，使用系统Chromium
+- 🔄 简便的工作流管理，提供多种部署脚本
+- 🔒 安全的凭证处理和环境配置
+- 🐳 Tomcat 9.0.108服务器，配备OpenJDK 21和演示Web应用程序
 - 🛠️ 内置支持模型上下文协议（MCP）服务器
+- 💬 使用zhayujie/chatgpt-on-wechat的微信机器人ChatGPT集成
+- 🔧 Jenkins CI/CD集成，配备可定制构建环境
+- 🗄️ 多种数据库选项（默认SQLite、PostgreSQL、MySQL）
+- 📦 使用uv进行高级包管理，实现更快的Python安装
+- 🎭 持续Playwright监控和自动符号链接创建
 
 ### 快速开始
 
@@ -78,46 +87,63 @@ DB_POSTGRESDB_PASSWORD=dbn8n@2025
 N8N_COMMUNITY_PACKAGES_ALLOW_TOOL_USAGE=true
 ```
 
-### Python 和包管理
+## Python 和包管理
 
 此设置包含最新的 uv 包管理器，用于更快的 Python 包安装。容器包括：
-- Python 3 和 pip
-- uv (快速 Python 包安装程序和解析器)
-- Python 扩展的必要构建工具
+- Python 3 和 pip（升级到最新版本，兼容PEP 668）
+- uv 和 uvx（快速Python包安装程序和解析器，通过官方方法安装）
+- Python 扩展的必要构建工具（gcc、musl-dev、libffi-dev）
+- 系统命令别名（python3→python、pip3→pip）提供便利
+
 ```
 # 在容器中安装 Python 包的示例
 pip install package-name
-# 或使用 uv (更快)
+# 或使用 uv (更快，推荐)
 uv pip install package-name
+# 或使用 uvx 直接运行工具
+uvx tool-name
 ```
 
 ### 截图
 ![工作流示例](n8n_mcp_demo.gif)
 
-### Playwright浏览器自动化
-此n8n设置包含Playwright用于浏览器自动化，具有以下功能：
+## Playwright浏览器自动化
 
-- **系统依赖**: Docker镜像包含Playwright和Chromium所需的所有系统依赖，包括nss、freetype、harfbuzz、ttf-freefont、gcompat、bash、dbus、fontconfig、mesa-gl、udev和xvfb。
-- **Chromium浏览器**: 使用系统自带的Chromium浏览器以获得更好的性能和兼容性。包含chromium-chromedriver。
-- **设置脚本**: 容器启动时会运行`playwright-setup.sh`脚本来配置环境，确保Playwright可以找到并使用系统的Chromium实例。
-- **环境变量**: 正确配置的环境变量，包括`PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD=1`、`PLAYWRIGHT_CHROMIUM_EXECUTABLE_PATH=/usr/bin/chromium-browser`等，以防止Playwright下载自己的浏览器二进制文件并确保无缝集成。
-- **n8n节点支持**: 完全支持n8n的Playwright节点，用于构建基于浏览器的自动化工作流。
-- **持续监控**: 设置包含一个后台进程，监控n8n-nodes-playwright安装，并为Playwright正确工作创建必要的目录结构和符号链接。
-- **浏览器符号链接**: 为Playwright节点期望找到的不同浏览器版本创建多个符号链接和目录结构。
+此n8n设置包含具有高级功能的综合Playwright浏览器自动化：
 
-### Tomcat服务器
-本项目还包括一个完整的Tomcat服务器设置，包括：
-- Ubuntu 25.10上的OpenJDK 21
-- Tomcat 9.0.108
-- Docker容器管理脚本
-- webapps、日志和配置的卷映射
-- 健康检查监控
-- 非root用户安全
+- **系统依赖**: 预装所有必要的系统依赖，包括nss、freetype、harfbuzz、ttf-freefont、gcompat、bash、dbus、fontconfig、mesa-gl、udev和xvfb。
+- **Chromium浏览器**: 使用Alpine Linux系统Chromium和chromium-chromedriver以获得最佳性能和兼容性。
+- **高级设置脚本**: `playwright-setup.sh`在容器启动时运行，提供全面的环境配置和浏览器检测。
+- **环境变量**: 完整的Playwright环境设置，包括`PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD=1`、`PLAYWRIGHT_CHROMIUM_EXECUTABLE_PATH=/usr/bin/chromium-browser`和Puppeteer兼容变量。
+- **n8n节点支持**: 完全支持n8n的Playwright节点，具有自动浏览器检测和配置。
+- **持续监控**: 后台进程监控n8n-nodes-playwright安装，动态创建必要的目录结构和符号链接。
+- **多版本支持**: 为多个Playwright版本（1129-1135）创建浏览器符号链接以确保兼容性。
+- **智能浏览器检测**: 实现假npx命令以跳过不必要的浏览器下载，直接使用系统Chromium。
+- **Chrome包装脚本**: 创建具有适当沙盒设置的包装脚本，用于无头操作。
 
-有关详细的Tomcat设置和管理说明，请参见[Tomcat/README.md](Tomcat/README.md)。
+### 带演示应用程序的Tomcat服务器
 
-### MCP服务器配置
+本项目包含带有演示Web应用程序的完整Tomcat服务器设置：
+- **基础**: Ubuntu 25.10上的OpenJDK 21，配备Tomcat 9.0.108
+- **管理脚本**: 全面的`runTomcat.sh`脚本，支持启动/停止/日志/清理命令
+- **卷映射**: webapps、日志和配置的持久存储
+- **健康监控**: 内置健康检查和非root用户安全
+- **演示应用程序**: 预装交互式HTML演示，包括：
+  - 伯努利原理动画（Claude和GPT-5版本）
+  - AI模型比较页面（DeepSeek、Kimi-dev、Qwen3-coder）
+  - 交互式科学可视化
+
+**访问点**：
+- 主应用程序: http://localhost:8090
+- 管理器应用: http://localhost:8090/manager (admin/admin)
+- 主机管理器: http://localhost:8090/host-manager
+
+有关详细的设置和管理说明，请参见[Tomcat/README.md](Tomcat/README.md)。
+
+## MCP服务器配置
+
 此n8n设置包含对模型上下文协议（MCP）服务器的内置支持。要配置MCP服务器，请在`docker-compose.yml`中设置以下环境变量：
+
 ```
 MCP_BRAVE_API_KEY=your-brave-api-key
 MCP_OPENAI_API_KEY=your-openai-key
@@ -125,7 +151,7 @@ MCP_SERPER_API_KEY=your-serper-key
 MCP_WEATHER_API_KEY=your-weather-api-key
 ```
 
-获取这些API密钥的方法：
+**获取API密钥**：
 - **Brave API密钥**: 在 https://brave.com/search/api/ 注册
 - **OpenAI API密钥**: 在 https://platform.openai.com/api-keys 创建一个
 - **Serper API密钥**: 从 https://serper.dev/ 获取
@@ -133,32 +159,124 @@ MCP_WEATHER_API_KEY=your-weather-api-key
 
 MCP（Model Context Protocol）使n8n工作流能够通过标准化接口访问外部工具和服务，扩展了自动化可能性的范围。
 
-### 故障排除
+## 微信机器人集成
 
-#### Docker 构建问题
-如果在 Docker 镜像构建过程中遇到依赖冲突，特别是在 Alpine Linux 上与 `openssl-dev` 相关的问题，这很可能是由于 Alpine 稳定版和 `edge` 仓库之间的不一致造成的。`Dockerfile` 已更新以解决此问题，具体措施如下：
+项目通过`WeChatRobot`目录包含微信机器人集成，功能包括：
+- **ChatGPT集成**: 使用`zhayujie/chatgpt-on-wechat`镜像进行微信自动化
+- **灵活配置**: 支持各种AI模型和自定义API端点
+- **聊天模式**: 单聊前缀（`["bot", "@bot"]`）和群聊支持
+- **创意功能**: 使用前缀`["画", "看", "找"]`进行图像创建（画、看、找）
+- **内存管理**: 可配置的对话最大令牌数（默认1000）
+- **多语言**: 内置多语言支持和可定制的角色描述
+- **插件系统**: 全局插件配置支持和LinkAI集成选项
 
-1.  确保同时使用 `main` 和 `community` `edge` 仓库。
-2.  执行 `apk update` 和 `apk upgrade` 以更新现有软件包。
-3.  在 `apk add` 命令中，将 `openssl` 和 `openssl-dev` 明确放在前面，以优先解决它们的依赖关系。
+**快速开始**：
+```bash
+cd WeChatRobot
+# 编辑docker-compose.yml设置您的OPEN_AI_API_KEY和其他设置
+docker-compose up -d
+```
 
-如果仍然遇到问题，请确保清除 Docker 缓存，并尝试使用 `docker-compose up --build --force-recreate` 重新构建。
+**关键配置**：
+- 设置`OPEN_AI_API_KEY`为您的OpenAI API密钥
+- 配置`MODEL`以指定特定AI模型（留空使用默认）
+- 调整`GROUP_NAME_WHITE_LIST`以允许群聊
+- 自定义`CHARACTER_DESC`以设置机器人个性
 
-#### Playwright 问题
-如果 Playwright 节点无法正常工作：
-1. 确保容器已完全启动（设置脚本在后台运行）
-2. 检查必要的符号链接是否已创建（应自动完成）
-3. 验证环境变量是否正确设置
-4. 后台监控器会根据需要创建符号链接，但如果容器启动后安装了 Playwright 节点，可能需要重新启动容器
+## Jenkins CI/CD集成
 
-#### 运行脚本
+项目包含Jenkins集成，用于持续集成和部署工作流：
+- **自定义构建环境**: 基于Docker的Jenkins，配备可定制构建上下文
+- **端口配置**: 在端口8090可访问，代理端口50000
+- **持久存储**: Jenkins数据和作业配置的卷映射
+- **简单设置**: 简单的docker-compose配置，便于快速部署
+
+**快速开始**：
+```bash
+cd Jenkins
+docker-compose up -d
+# 在 http://localhost:8090 访问Jenkins
+```
+
+## MySQL数据库集成
+
+通过MySQL集成为需要MySQL的工作流提供替代数据库选项：
+- **最新MySQL**: 使用mysql:latest镜像，配备优化配置
+- **安全性**: 配置安全密码和用户权限
+- **端口映射**: 在端口3308可访问，避免冲突
+- **持久存储**: MySQL数据持久化的专用卷
+- **预配置数据库**: 包含示例数据库和用户设置
+
+**配置**：
+- Root密码: `9ol.6yhn3edc`
+- 用户: `study`，密码: `5tgb3edc1qaz`
+- 数据库: `mysql`
+- 端口: `3308`（主机）→ `3306`（容器）
+
+**快速开始**：
+```bash
+cd Mysql
+docker-compose up -d
+# 在 localhost:3308 连接MySQL
+```
+
+## 访问点
+
+服务运行后，您可以在以下地址访问：
+
+- **N8N界面**: http://localhost:5678
+- **Tomcat服务器**: http://localhost:8090（当Tomcat服务运行时）
+  - 管理器应用: http://localhost:8090/manager (admin/admin)
+- **Jenkins CI/CD**: http://localhost:8090（当Jenkins服务运行时）
+- **MySQL数据库**: localhost:3308（当MySQL服务运行时）
+- **微信机器人**: 设置后通过微信应用程序配置
+
+**注意**: Tomcat和Jenkins默认都使用端口8090。一次只运行一个服务或修改端口配置以避免冲突。
+
+## 故障排除
+
+### Docker 构建问题
+如果在Docker镜像构建过程中遇到依赖冲突，特别是Alpine Linux上与`openssl-dev`相关的问题，`Dockerfile`包含全面的修复：
+
+1. **仓库管理**: 确保`main`和`community`仓库正确配置
+2. **包更新**: 在安装依赖前执行`apk update`和`apk upgrade`
+3. **依赖优先级**: 早期显式安装`openssl`和`openssl-dev`以优先解决其依赖关系
+4. **PEP 668兼容性**: 使用`--break-system-packages`标志升级pip以支持现代Python打包
+5. **UV安装**: 使用官方uv安装方法确保可靠的包管理
+
+**解决方案**：
+- 清除Docker缓存: `docker system prune -a`
+- 强制重建: `docker-compose up --build --force-recreate`
+- 检查构建日志中的包冲突
+
+### Playwright 问题
+如果Playwright节点无法正常工作：
+1. **容器启动**: 确保容器已完全启动（设置脚本在后台运行）
+2. **符号链接创建**: 检查浏览器符号链接是否自动创建（监控器每10秒运行一次）
+3. **环境变量**: 验证所有Playwright环境变量是否正确设置
+4. **节点安装**: 如果在容器启动后安装Playwright节点，重启容器以触发符号链接创建
+5. **浏览器检测**: 检查`/usr/bin/chromium-browser`是否存在且可执行
+6. **监控进程**: 后台监控器应自动为版本1129-1135创建符号链接
+
+**调试命令**：
+```bash
+# 检查Chromium是否工作
+docker exec <container> /usr/bin/chromium-browser --version
+# 检查符号链接
+docker exec <container> find /home/node/.n8n -name "chrome" -type l
+# 查看监控器日志
+docker logs <container> | grep -i playwright
+```
+
+### 运行脚本
 我们提供几种脚本用于不同场景：
 - `runMe.sh`: 构建并运行强制重建（适用于全新安装）
-- `runNewN8n.sh`: 使用 PostgreSQL 配置运行
-- `docker-compose.yml`: 使用 SQLite 的默认设置
-- `docker-compose-postgre.yml`: PostgreSQL 设置
+- `runNewN8n.sh`: 使用PostgreSQL配置运行
+- `docker-compose.yml`: 使用SQLite的默认设置
+- `docker-compose-postgre.yml`: PostgreSQL设置
 
 ---
 
 ## 获取帮助
+
 如需支持，请在GitHub上提交issue。

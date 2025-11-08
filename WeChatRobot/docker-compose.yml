@@ -5,6 +5,10 @@ services:
     container_name: chatgpt-on-wechat
     security_opt:
       - seccomp:unconfined
+    ports:
+      - "9899:9899"
+    volumes:
+      - ./config.json:/app/config.json
     environment:
       CHANNEL_TYPE: 'web'
       OPEN_AI_API_KEY: 'YOUR API KEY'

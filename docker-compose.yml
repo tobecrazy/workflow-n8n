@@ -9,9 +9,16 @@ services:
       - MCP_SERPER_API_KEY=your-serper-key
       - MCP_WEATHER_API_KEY=
 
+      # Timezone settings
+      - GENERIC_TIMEZONE=Asia/Shanghai
+      - TZ=Asia/Shanghai
+
+      # Security settings
+      - N8N_ENFORCE_SETTINGS_FILE_PERMISSIONS=true
+
       # Enable community nodes as tools
       - N8N_COMMUNITY_PACKAGES_ALLOW_TOOL_USAGE=true
-      
+
       # Address deprecation warnings
       - DB_SQLITE_POOL_SIZE=10
       - N8N_RUNNERS_ENABLED=true

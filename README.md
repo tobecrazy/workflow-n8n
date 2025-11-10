@@ -73,6 +73,13 @@ N8N_RUNNERS_ENABLED=true
 # SQLite connection pool size
 DB_SQLITE_POOL_SIZE=10
 
+# Timezone configuration
+GENERIC_TIMEZONE=Asia/Shanghai
+TZ=Asia/Shanghai
+
+# Security settings
+N8N_ENFORCE_SETTINGS_FILE_PERMISSIONS=true
+
 # Basic Auth
 N8N_BASIC_AUTH_USER=admin
 N8N_BASIC_AUTH_PASSWORD=password
@@ -162,6 +169,7 @@ The project includes WeChat bot integration through the `WeChatRobot` directory,
 cd WeChatRobot
 # Edit docker-compose.yml to set your OPEN_AI_API_KEY and other settings
 docker-compose up -d
+# WeChat bot service will be accessible on port 9899
 ```
 
 **Key Configuration**:
@@ -235,7 +243,7 @@ Once the services are running, you can access them at:
   - Manager App: http://localhost:8090/manager (admin/admin)
 - **Jenkins CI/CD**: http://localhost:8090 (when Jenkins service is running)
 - **MySQL Database**: localhost:3308 (when MySQL service is running)
-- **WeChat Bot**: Configured through the WeChat application after setup
+- **WeChat Bot**: Configured through the WeChat application after setup (service on port 9899)
 
 **Note**: Tomcat and Jenkins both use port 8090 by default. Run only one service at a time or modify port configurations to avoid conflicts.
 
@@ -280,6 +288,14 @@ We provide several scripts for different scenarios:
 - `runNewN8n.sh`: Runs with PostgreSQL configuration
 - `docker-compose.yml`: Default setup with SQLite
 - `docker-compose-postgre.yml`: PostgreSQL setup
+
+## Project Documentation
+
+The project includes comprehensive documentation for different development contexts:
+
+- **[CLAUDE.md](CLAUDE.md)**: Development guide for Claude Code AI assistant
+- **[QWEN.md](QWEN.md)**: Detailed project context and architecture documentation
+- **[README_cn.md](README_cn.md)**: Chinese version of this documentation
 
 ---
 

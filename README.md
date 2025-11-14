@@ -67,11 +67,11 @@ docker-compose up -d
 Environment variables can be set in the `docker-compose.yml` or `.env` file:
 
 ```
-# Enable/disable runners (set to true to use)
-N8N_RUNNERS_ENABLED=true
-
-# SQLite connection pool size
-DB_SQLITE_POOL_SIZE=10
+# MCP server environment variables
+MCP_BRAVE_API_KEY=your-brave-api-key
+MCP_OPENAI_API_KEY=your-openai-key
+MCP_SERPER_API_KEY=your-serper-key
+MCP_WEATHER_API_KEY=your-weather-api-key
 
 # Timezone configuration
 GENERIC_TIMEZONE=Asia/Shanghai
@@ -80,7 +80,16 @@ TZ=Asia/Shanghai
 # Security settings
 N8N_ENFORCE_SETTINGS_FILE_PERMISSIONS=true
 
-# Basic Auth
+# Enable/disable runners (set to true to use)
+N8N_RUNNERS_ENABLED=true
+
+# SQLite connection pool size
+DB_SQLITE_POOL_SIZE=10
+
+# Allow community packages to use tools
+N8N_COMMUNITY_PACKAGES_ALLOW_TOOL_USAGE=true
+
+# Basic Auth (optional)
 N8N_BASIC_AUTH_USER=admin
 N8N_BASIC_AUTH_PASSWORD=password
 
@@ -157,6 +166,7 @@ See [Tomcat/README.md](Tomcat/README.md) for detailed setup and management instr
 
 The project includes WeChat bot integration through the `WeChatRobot` directory, featuring:
 - **ChatGPT Integration**: Uses `zhayujie/chatgpt-on-wechat` image for WeChat automation
+- **Enhanced Security**: Configured with `seccomp:unconfined` security option for optimal compatibility
 - **Flexible Configuration**: Support for various AI models and custom API endpoints
 - **Chat Modes**: Single chat prefix (`["bot", "@bot"]`) and group chat support
 - **Creative Features**: Image creation with prefixes `["画", "看", "找"]` (draw, see, find)

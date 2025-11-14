@@ -64,13 +64,29 @@ docker-compose up -d
 ### 配置
 环境变量可在`docker-compose.yml`或`.env`文件中设置：
 ```
+# MCP服务器环境变量
+MCP_BRAVE_API_KEY=your-brave-api-key
+MCP_OPENAI_API_KEY=your-openai-key
+MCP_SERPER_API_KEY=your-serper-key
+MCP_WEATHER_API_KEY=your-weather-api-key
+
+# 时区配置
+GENERIC_TIMEZONE=Asia/Shanghai
+TZ=Asia/Shanghai
+
+# 安全设置
+N8N_ENFORCE_SETTINGS_FILE_PERMISSIONS=true
+
 # 启用/禁用执行器 (设置为 true 以使用)
 N8N_RUNNERS_ENABLED=true
 
 # SQLite 连接池大小
 DB_SQLITE_POOL_SIZE=10
 
-# 基本认证
+# 允许社区包使用工具
+N8N_COMMUNITY_PACKAGES_ALLOW_TOOL_USAGE=true
+
+# 基本认证（可选）
 N8N_BASIC_AUTH_USER=admin
 N8N_BASIC_AUTH_PASSWORD=password
 
@@ -163,6 +179,7 @@ MCP（Model Context Protocol）使n8n工作流能够通过标准化接口访问�
 
 项目通过`WeChatRobot`目录包含微信机器人集成，功能包括：
 - **ChatGPT集成**: 使用`zhayujie/chatgpt-on-wechat`镜像进行微信自动化
+- **增强安全性**: 配置了`seccomp:unconfined`安全选项以实现最佳兼容性
 - **灵活配置**: 支持各种AI模型和自定义API端点
 - **聊天模式**: 单聊前缀（`["bot", "@bot"]`）和群聊支持
 - **创意功能**: 使用前缀`["画", "看", "找"]`进行图像创建（画、看、找）

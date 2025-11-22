@@ -1,7 +1,10 @@
 services:
   n8n:
     #image: n8nio/n8n
-    build: .
+    build:
+      context: .
+      args:
+        - BUILDKIT_INLINE_CACHE=1
     environment:
       # MCP server environment variables
       - MCP_BRAVE_API_KEY=your-brave-api-key

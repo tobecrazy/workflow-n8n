@@ -2,6 +2,19 @@ FROM n8nio/n8n:latest
 
 USER root
 
+# Configure China region mirror sources
+# Use Alibaba Cloud Alpine mirror source
+RUN sed -i 's/dl-cdn.alpinelinux.org/mirrors.aliyun.com/g' /etc/apk/repositories
+
+# Configure pip to use Tsinghua University mirror source
+RUN mkdir -p ~/.pip && \
+    echo '[global]' > ~/.pip/pip.conf && \
+    echo 'index-url = https://pypi.tuna.tsinghua.edu.cn/simple' >> ~/.pip/pip.conf && \
+    echo 'trusted-host = pypi.tuna.tsinghua.edu.cn' >> ~/.pip/pip.conf
+
+# Configure npm to use Taobao mirror source
+RUN npm config set registry https://registry.npmmirror.com
+
 # Install system dependencies for Playwright and Chromium
 RUN apk update && \
     apk upgrade && \
@@ -33,22 +46,33 @@ RUN apk update && \
       xvfb \
       && rm -rf /var/cache/apk/*
 
-# 更新 pip 到最新版（兼容 PEP 668）
-RUN pip install --upgrade pip --break-system-packages
+# Update pip to latest version (compatible with PEP 668) using China mirror source
+RUN pip install --upgrade pip --break-system-packages -i https://pypi.tuna.tsinghua.edu.cn/simple
 
-# 安装最新版 uv（官方推荐方式）
-RUN curl -LsSf https://astral.sh/uv/install.sh | sh && \
-    mv /root/.local/bin/uv /usr/local/bin/uv && \
-    mv /root/.local/bin/uvx /usr/local/bin/uvx && \
-    chmod +x /usr/local/bin/uv /usr/local/bin/uvx
+# Install latest version of uv (using pre-compiled version from China mirror source)
+RUN pip install uv --break-system-packages -i https://pypi.tuna.tsinghua.edu.cn/simple
 
-# 建立常用命令别名
+# Create common command aliases
 RUN ln -sf python3 /usr/bin/python && ln -sf pip3 /usr/bin/pip
 
-RUN pip install --upgrade uv --break-system-packages
+RUN pip install --upgrade uv --break-system-packages -i https://pypi.tuna.tsinghua.edu.cn/simple
 
-# 确保 node 用户也能使用 uv
+# Ensure node user can also use uv and China mirror sources
 ENV PATH="/usr/local/bin:$PATH"
+
+# Configure pip and npm China mirror sources for node user
+RUN mkdir -p /home/node/.pip && \
+    echo '[global]' > /home/node/.pip/pip.conf && \
+    echo 'index-url = https://pypi.tuna.tsinghua.edu.cn/simple' >> /home/node/.pip/pip.conf && \
+    echo 'trusted-host = pypi.tuna.tsinghua.edu.cn' >> /home/node/.pip/pip.conf && \
+    chown -R node:node /home/node/.pip
+
+# Switch to node user to configure npm
+USER node
+RUN npm config set registry https://registry.npmmirror.com
+
+# Switch back to root user to continue configuration
+USER root
 
 # Set Playwright environment variables to use system Chromium
 ENV PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD=1

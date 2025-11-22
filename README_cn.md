@@ -287,18 +287,26 @@ docker-compose up -d
 ## 故障排除
 
 ### Docker 构建问题
-如果在Docker镜像构建过程中遇到依赖冲突，特别是Alpine Linux上与`openssl-dev`相关的问题，`Dockerfile`包含全面的修复：
+此 Docker 镜像包含了中国优化的镜像源，可解决大部分网络相关的构建问题。但如果在构建过程中仍遇到依赖冲突：
 
-1. **仓库管理**: 确保`main`和`community`仓库正确配置
-2. **包更新**: 在安装依赖前执行`apk update`和`apk upgrade`
-3. **依赖优先级**: 早期显式安装`openssl`和`openssl-dev`以优先解决其依赖关系
-4. **PEP 668兼容性**: 使用`--break-system-packages`标志升级pip以支持现代Python打包
-5. **UV安装**: 使用官方uv安装方法确保可靠的包管理
+1. **仓库管理**: 使用阿里云镜像实现更快、更可靠的 Alpine 包下载
+2. **包更新**: 在安装依赖前使用中国镜像执行 `apk update` 和 `apk upgrade`
+3. **依赖优先级**: 早期显式安装 `openssl` 和 `openssl-dev` 以优先解决其依赖关系
+4. **PEP 668兼容性**: 使用清华大学镜像和 `--break-system-packages` 标志升级 pip
+5. **UV安装**: 使用官方 uv 安装方法配合中国镜像确保可靠的包管理
+
+**中国镜像解决的常见问题**：
+- ❌ 从默认国际镜像下载时的连接超时
+- ❌ 中国地区包下载速度慢
+- ❌ 构建过程中间歇性网络故障
+- ❌ npm 包安装失败
+- ❌ pip 包下载超时
 
 **解决方案**：
-- 清除Docker缓存: `docker system prune -a`
-- 强制重建: `docker-compose up --build --force-recreate`
-- 检查构建日志中的包冲突
+- **网络问题**: 中国镜像源应能解决大部分网络问题
+- **强制重建**: `docker-compose up --build --force-recreate`
+- **清除缓存**: `docker system prune -a`（仅在必要时）
+- **验证镜像**: 检查镜像配置，参考[中国镜像源配置](#中国镜像源配置)章节
 
 ### Playwright 问题
 如果Playwright节点无法正常工作：

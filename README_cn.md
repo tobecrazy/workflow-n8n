@@ -22,6 +22,7 @@
 - 🗄️ 多种数据库选项（默认SQLite、PostgreSQL、MySQL）
 - 📦 使用uv进行高级包管理，实现更快的Python安装
 - 🎭 持续Playwright监控和自动符号链接创建
+- 🌏 中国地区优化的镜像源，提供更快的下载速度
 
 ### 快速开始
 
@@ -101,6 +102,39 @@ DB_POSTGRESDB_PASSWORD=dbn8n@2025
 
 # 允许社区包使用工具
 N8N_COMMUNITY_PACKAGES_ALLOW_TOOL_USAGE=true
+```
+
+## 中国镜像源配置
+
+此 Docker 镜像针对中国地区用户进行了优化，预配置了镜像源以确保快速可靠的下载：
+
+### 已配置的镜像源：
+
+- **Alpine Linux**: 使用阿里云镜像 (`mirrors.aliyun.com`) 实现快速包安装
+- **Python pip**: 使用清华大学镜像 (`pypi.tuna.tsinghua.edu.cn/simple`) 安装 Python 包
+- **Node.js npm**: 使用淘宝 npm 镜像 (`registry.npmmirror.com`) 安装 Node.js 包
+- **uv 包管理器**: 使用清华大学镜像实现快速 Python 包管理
+
+### 优势：
+
+- 🚀 **更快下载**: 在中国地区显著加快包下载速度
+- 🔒 **可靠连接**: 减少连接失败和超时
+- 📦 **全面覆盖**: 所有包管理器 (apk, pip, npm, uv) 都已优化
+- 🛡️ **自动回退**: 使用高可用的可信镜像
+
+### 镜像源验证：
+
+您可以验证镜像源是否正常工作：
+
+```bash
+# 检查 Alpine 包源
+docker exec <container> cat /etc/apk/repositories
+
+# 检查 pip 配置
+docker exec -u node <container> cat /home/node/.pip/pip.conf
+
+# 检查 npm 配置
+docker exec -u node <container> npm config get registry
 ```
 
 ## Python 和包管理

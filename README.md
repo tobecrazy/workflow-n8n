@@ -22,6 +22,7 @@ This project provides a comprehensive workflow automation platform built on n8n 
 - 🗄️ Multiple database options (SQLite default, PostgreSQL, MySQL)
 - 📦 Advanced package management with uv for faster Python installations
 - 🎭 Continuous Playwright monitoring and automatic symlink creation
+- 🌏 China-optimized mirror sources for faster downloads in China regions
 
 ## Quick Start
 
@@ -104,6 +105,39 @@ DB_POSTGRESDB_PASSWORD=dbn8n@2025
 
 # Allow community packages to use tools
 N8N_COMMUNITY_PACKAGES_ALLOW_TOOL_USAGE=true
+```
+
+## China Mirror Sources Configuration
+
+This Docker image is optimized for users in China regions with pre-configured mirror sources to ensure fast and reliable downloads:
+
+### Configured Mirror Sources:
+
+- **Alpine Linux**: Uses Alibaba Cloud mirror (`mirrors.aliyun.com`) for fast package installation
+- **Python pip**: Uses Tsinghua University mirror (`pypi.tuna.tsinghua.edu.cn/simple`) for Python packages
+- **Node.js npm**: Uses Taobao npm mirror (`registry.npmmirror.com`) for Node.js packages
+- **uv package manager**: Uses Tsinghua University mirror for fast Python package management
+
+### Benefits:
+
+- 🚀 **Faster Downloads**: Significantly faster package downloads in China regions
+- 🔒 **Reliable Connection**: Reduces connection failures and timeouts
+- 📦 **Universal Coverage**: All package managers (apk, pip, npm, uv) are optimized
+- 🛡️ **Automatic Fallback**: Uses trusted mirrors with high uptime
+
+### Mirror Source Verification:
+
+You can verify the mirror sources are working:
+
+```bash
+# Check Alpine package source
+docker exec <container> cat /etc/apk/repositories
+
+# Check pip configuration
+docker exec -u node <container> cat /home/node/.pip/pip.conf
+
+# Check npm configuration
+docker exec -u node <container> npm config get registry
 ```
 
 ## Python and Package Management
@@ -260,18 +294,26 @@ Once the services are running, you can access them at:
 ## Troubleshooting
 
 ### Docker Build Issues
-If you encounter dependency conflicts during the Docker image build, especially related to `openssl-dev` on Alpine Linux, the `Dockerfile` includes comprehensive fixes:
+This Docker image includes China-optimized mirror sources that resolve most network-related build issues. However, if you encounter dependency conflicts during Docker image build:
 
-1. **Repository Management**: Ensures both `main` and `community` repositories are properly configured
-2. **Package Updates**: Performs `apk update` and `apk upgrade` before installing dependencies
+1. **Repository Management**: Uses Alibaba Cloud mirror for faster and more reliable Alpine package downloads
+2. **Package Updates**: Performs `apk update` and `apk upgrade` with China mirrors before installing dependencies
 3. **Dependency Priority**: Explicitly installs `openssl` and `openssl-dev` early to prioritize their resolution
-4. **PEP 668 Compatibility**: Upgrades pip with `--break-system-packages` flag for modern Python packaging
-5. **UV Installation**: Uses official uv installation method for reliable package management
+4. **PEP 668 Compatibility**: Upgrades pip with `--break-system-packages` flag using Tsinghua University mirror
+5. **UV Installation**: Uses official uv installation method with China mirror for reliable package management
+
+**Common Issues Resolved by China Mirrors**:
+- ❌ Connection timeouts when downloading from default international mirrors
+- ❌ Slow package downloads in China regions
+- ❌ Intermittent network failures during build
+- ❌ npm package installation failures
+- ❌ pip package download timeouts
 
 **Solutions**:
-- Clear Docker cache: `docker system prune -a`
-- Force rebuild: `docker-compose up --build --force-recreate`
-- Check for conflicting packages in the build logs
+- **Network Issues**: China mirror sources should resolve most network problems
+- **Force Rebuild**: `docker-compose up --build --force-recreate`
+- **Clear Cache**: `docker system prune -a` (only if necessary)
+- **Verify Mirrors**: Check mirror configuration as described in the [China Mirror Sources Configuration](#china-mirror-sources-configuration) section
 
 ### Playwright Issues
 If Playwright nodes don't work properly:

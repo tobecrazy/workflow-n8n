@@ -2,10 +2,6 @@ FROM n8nio/n8n:latest
 
 USER root
 
-# Configure China region mirror sources
-# Use Alibaba Cloud Alpine mirror source
-RUN sed -i 's/dl-cdn.alpinelinux.org/mirrors.aliyun.com/g' /etc/apk/repositories
-
 # Configure pip to use Tsinghua University mirror source
 RUN mkdir -p ~/.pip && \
     echo '[global]' > ~/.pip/pip.conf && \
@@ -16,35 +12,15 @@ RUN mkdir -p ~/.pip && \
 RUN npm config set registry https://registry.npmmirror.com
 
 # Install system dependencies for Playwright and Chromium
-RUN apk update && \
-    apk upgrade && \
-    apk add --no-cache \
-      openssl \
-      openssl-dev \
-      python3 \
-      py3-pip \
-      py3-setuptools \
-      py3-wheel \
-      gcc \
-      musl-dev \
-      libffi-dev \
-      curl \
-      ca-certificates \
-      chromium \
-      chromium-chromedriver \
-      nss \
-      freetype \
-      freetype-dev \
-      harfbuzz \
-      ttf-freefont \
-      gcompat \
-      bash \
-      dbus \
-      fontconfig \
-      mesa-gl \
-      udev \
-      xvfb \
-      && rm -rf /var/cache/apk/*
+# Split into multiple steps for better error handling and caching
+RUN apk update && apk upgrade
+
+# Install packages in smaller groups to avoid timeout issues
+RUN apk add --no-cache openssl openssl-dev python3 py3-pip py3-setuptools py3-wheel gcc musl-dev libffi-dev curl ca-certificates
+
+RUN apk add --no-cache chromium chromium-chromedriver nss freetype freetype-dev harfbuzz ttf-freefont gcompat
+
+RUN apk add --no-cache bash dbus fontconfig mesa-gl udev xvfb && rm -rf /var/cache/apk/*
 
 # Update pip to latest version (compatible with PEP 668) using China mirror source
 RUN pip install --upgrade pip --break-system-packages -i https://pypi.tuna.tsinghua.edu.cn/simple

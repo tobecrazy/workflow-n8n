@@ -349,6 +349,52 @@ The project includes comprehensive documentation for different development conte
 - **[QWEN.md](QWEN.md)**: Detailed project context and architecture documentation
 - **[README_cn.md](README_cn.md)**: Chinese version of this documentation
 
+## Project Structure
+```
+workflow-n8n/
+├── .claude/                          # Claude AI assistant configuration
+├── .gitignore                        # Git ignore rules
+├── AI-workflow-Demo.mp4             # Demo video file
+├── CLAUDE.md                        # Claude Code development guide
+├── Dockerfile                       # Main n8n container definition
+├── QWEN.md                          # Project context and architecture documentation
+├── README.md                        # Main documentation (English)
+├── README_cn.md                     # Chinese documentation
+├── docker-compose.yml               # SQLite setup configuration
+├── docker-compose-postgre.yml       # PostgreSQL setup configuration
+├── n8n_mcp_demo.gif                # Demo GIF animation
+├── playwright-setup.sh              # Playwright browser automation setup
+├── runMe.sh                         # SQLite deployment script
+├── runNewN8n.sh                     # PostgreSQL deployment script
+├── conf/                            # N8N configuration (volume mount)
+├── logs/                            # Application logs (volume mount)
+├── n8n_data/                        # N8N data persistence (volume mount)
+├── webapps/                         # Web applications (volume mount)
+├── Jenkins/                         # Jenkins CI/CD integration
+│   ├── Dockerfile                   # Jenkins container definition
+│   ├── docker-compose.yml          # Jenkins service configuration
+│   ├── runJenkins.sh               # Jenkins deployment script
+│   └── data/                        # Jenkins runtime data (gitignored)
+├── Mysql/                           # MySQL database integration
+│   ├── docker-compose.yml          # MySQL service configuration
+│   ├── runMe.sh                     # MySQL deployment script
+│   ├── DBeaver-Connection-Guide.md  # Database connection guide
+│   └── DBeaver-Setup-Instructions.md # DBeaver setup documentation
+├── Tomcat/                          # Tomcat web server
+│   ├── .claude/                     # Claude configuration for Tomcat
+│   ├── Dockerfile                   # Tomcat container definition
+│   ├── README.md                    # Tomcat-specific documentation
+│   ├── docker-compose.yml          # Tomcat service configuration
+│   ├── runTomcat.sh                # Tomcat management script
+│   ├── conf/                        # Tomcat configuration files
+│   ├── logs/                        # Tomcat logs (gitignored)
+│   └── webapps/                     # Tomcat web applications
+└── WeChatRobot/                     # WeChat bot integration (gitignored)
+    ├── config.json                  # WeChat bot configuration
+    ├── docker-compose.yml          # WeChat service configuration
+    └── runMe.sh                     # WeChat bot deployment script
+```
+
 ---
 
 ## Getting Help

@@ -226,6 +226,7 @@ MCP（Model Context Protocol）使n8n工作流能够通过标准化接口访问�
 cd WeChatRobot
 # 编辑docker-compose.yml设置您的OPEN_AI_API_KEY和其他设置
 docker-compose up -d
+# WeChat bot service will be accessible on port 9899
 ```
 
 **关键配置**：
@@ -333,6 +334,60 @@ docker logs <container> | grep -i playwright
 - `runNewN8n.sh`: 使用PostgreSQL配置运行
 - `docker-compose.yml`: 使用SQLite的默认设置
 - `docker-compose-postgre.yml`: PostgreSQL设置
+
+## 项目文档
+
+项目包含针对不同开发场景的全面文档：
+
+- **[CLAUDE.md](CLAUDE.md)**: Claude Code AI助手开发指南
+- **[QWEN.md](QWEN.md)**: 详细的项目上下文和架构文档
+- **[README_cn.md](README_cn.md)**: 本文档的中文版本
+
+## 项目结构
+```
+workflow-n8n/
+├── .claude/                          # Claude AI助手配置
+├── .gitignore                        # Git忽略规则
+├── AI-workflow-Demo.mp4             # 演示视频文件
+├── CLAUDE.md                        # Claude Code开发指南
+├── Dockerfile                       # 主n8n容器定义
+├── QWEN.md                          # 项目上下文和架构文档
+├── README.md                        # 主文档（英文）
+├── README_cn.md                     # 中文文档
+├── docker-compose.yml               # SQLite设置配置
+├── docker-compose-postgre.yml       # PostgreSQL设置配置
+├── n8n_mcp_demo.gif                # 演示GIF动画
+├── playwright-setup.sh              # Playwright浏览器自动化设置
+├── runMe.sh                         # SQLite部署脚本
+├── runNewN8n.sh                     # PostgreSQL部署脚本
+├── conf/                            # N8N配置（卷挂载）
+├── logs/                            # 应用程序日志（卷挂载）
+├── n8n_data/                        # N8N数据持久化（卷挂载）
+├── webapps/                         # Web应用程序（卷挂载）
+├── Jenkins/                         # Jenkins CI/CD集成
+│   ├── Dockerfile                   # Jenkins容器定义
+│   ├── docker-compose.yml          # Jenkins服务配置
+│   ├── runJenkins.sh               # Jenkins部署脚本
+│   └── data/                        # Jenkins运行时数据（已忽略）
+├── Mysql/                           # MySQL数据库集成
+│   ├── docker-compose.yml          # MySQL服务配置
+│   ├── runMe.sh                     # MySQL部署脚本
+│   ├── DBeaver-Connection-Guide.md  # 数据库连接指南
+│   └── DBeaver-Setup-Instructions.md # DBeaver设置文档
+├── Tomcat/                          # Tomcat Web服务器
+│   ├── .claude/                     # Tomcat的Claude配置
+│   ├── Dockerfile                   # Tomcat容器定义
+│   ├── README.md                    # Tomcat特定文档
+│   ├── docker-compose.yml          # Tomcat服务配置
+│   ├── runTomcat.sh                # Tomcat管理脚本
+│   ├── conf/                        # Tomcat配置文件
+│   ├── logs/                        # Tomcat日志（已忽略）
+│   └── webapps/                     # Tomcat Web应用程序
+└── WeChatRobot/                     # 微信机器人集成（已忽略）
+    ├── config.json                  # 微信机器人配置
+    ├── docker-compose.yml          # 微信服务配置
+    └── runMe.sh                     # 微信机器人部署脚本
+```
 
 ---
 

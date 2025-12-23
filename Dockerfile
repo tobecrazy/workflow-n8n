@@ -2,46 +2,23 @@ FROM n8nio/n8n:latest
 
 USER root
 
-# Configure pip to use Tsinghua University mirror source
-RUN mkdir -p ~/.pip && \
-    echo '[global]' > ~/.pip/pip.conf && \
-    echo 'index-url = https://pypi.tuna.tsinghua.edu.cn/simple' >> ~/.pip/pip.conf && \
-    echo 'trusted-host = pypi.tuna.tsinghua.edu.cn' >> ~/.pip/pip.conf
+
 
 # Configure npm to use Taobao mirror source
 RUN npm config set registry https://registry.npmmirror.com
 
-# Install system dependencies for Playwright and Chromium
-# Split into multiple steps for better error handling and caching
-RUN apk update && apk upgrade
 
-# Install packages in smaller groups to avoid timeout issues
-RUN apk add --no-cache openssl openssl-dev python3 py3-pip py3-setuptools py3-wheel gcc musl-dev libffi-dev curl ca-certificates
 
-RUN apk add --no-cache chromium chromium-chromedriver nss freetype freetype-dev harfbuzz ttf-freefont gcompat
 
-RUN apk add --no-cache bash dbus fontconfig mesa-gl udev xvfb && rm -rf /var/cache/apk/*
 
-# Update pip to latest version (compatible with PEP 668) using China mirror source
-RUN pip install --upgrade pip --break-system-packages -i https://pypi.tuna.tsinghua.edu.cn/simple
 
-# Install latest version of uv (using pre-compiled version from China mirror source)
-RUN pip install uv --break-system-packages -i https://pypi.tuna.tsinghua.edu.cn/simple
 
-# Create common command aliases
-RUN ln -sf python3 /usr/bin/python && ln -sf pip3 /usr/bin/pip
 
-RUN pip install --upgrade uv --break-system-packages -i https://pypi.tuna.tsinghua.edu.cn/simple
 
 # Ensure node user can also use uv and China mirror sources
 ENV PATH="/usr/local/bin:$PATH"
 
-# Configure pip and npm China mirror sources for node user
-RUN mkdir -p /home/node/.pip && \
-    echo '[global]' > /home/node/.pip/pip.conf && \
-    echo 'index-url = https://pypi.tuna.tsinghua.edu.cn/simple' >> /home/node/.pip/pip.conf && \
-    echo 'trusted-host = pypi.tuna.tsinghua.edu.cn' >> /home/node/.pip/pip.conf && \
-    chown -R node:node /home/node/.pip
+
 
 # Switch to node user to configure npm
 USER node

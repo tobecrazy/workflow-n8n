@@ -1,10 +1,11 @@
 services:
   n8n:
-    #image: n8nio/n8n
-    build:
-      context: .
-      args:
-        - BUILDKIT_INLINE_CACHE=1
+    image: n8nio/n8n:last
+    container_name: n8n-main
+    #build:
+    #  context: .
+    #  args:
+    #    - BUILDKIT_INLINE_CACHE=1
     environment:
       # MCP server environment variables
       - MCP_BRAVE_API_KEY=your-brave-api-key
@@ -24,13 +25,28 @@ services:
 
       # Address deprecation warnings
       - DB_SQLITE_POOL_SIZE=10
+      
+      # Runner settings from user
       - N8N_RUNNERS_ENABLED=true
+      - N8N_RUNNERS_MODE=external
+      - N8N_RUNNERS_BROKER_LISTEN_ADDRESS=0.0.0.0
+      - N8N_RUNNERS_AUTH_TOKEN=my-n8n-token-2025
+      - N8N_NATIVE_PYTHON_RUNNER=true
     ports:
       - "5678:5678"
     volumes:
       - workflow-n8n_n8n_data:/home/node/.n8n
     stdin_open: true
     tty: true
+
+  task-runners:
+    image: n8nio/runners:last
+    container_name: n8n-runners
+    environment:
+      - N8N_RUNNERS_TASK_BROKER_URI=http://n8n-main:5679
+      - N8N_RUNNERS_AUTH_TOKEN=my-n8n-token-2025
+    depends_on:
+      - n8n
 
 volumes:
   workflow-n8n_n8n_data:

@@ -40,7 +40,7 @@ services:
     tty: true
 
   task-runners:
-    image: n8nio/runners:last
+    image:  n8nio/runners:latest
     container_name: n8n-runners
     environment:
       - N8N_RUNNERS_TASK_BROKER_URI=http://n8n-main:5679

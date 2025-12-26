@@ -1,7 +1,7 @@
 services:
   n8n:
     image: n8nio/n8n:latest
-    container_name: n8n
+    container_name: n8n-main
     ports:
       - "5678:5678"
     environment:
@@ -19,9 +19,16 @@ services:
 
        # Enable community nodes as tools
       - N8N_COMMUNITY_PACKAGES_ALLOW_TOOL_USAGE=true
+
+      # Security settings
+      - N8N_ENFORCE_SETTINGS_FILE_PERMISSIONS=true
       
-      # Address deprecation warnings
+      # Address deprecation warnings and runner settings
       - N8N_RUNNERS_ENABLED=true
+      - N8N_RUNNERS_MODE=external
+      - N8N_RUNNERS_BROKER_LISTEN_ADDRESS=0.0.0.0
+      - N8N_RUNNERS_AUTH_TOKEN=my-n8n-token-2025
+      - N8N_NATIVE_PYTHON_RUNNER=true
     volumes:
       - workflow-n8n_n8n_data:/home/node/.n8n
     stdin_open: true
@@ -29,6 +36,15 @@ services:
     depends_on:
       - db
     restart: unless-stopped
+
+  task-runners:
+    image: n8nio/runners:latest
+    container_name: n8n-runners
+    environment:
+      - N8N_RUNNERS_TASK_BROKER_URI=http://n8n-main:5679
+      - N8N_RUNNERS_AUTH_TOKEN=my-n8n-token-2025
+    depends_on:
+      - n8n
 
   db:
     image: postgres:17
